@@ -1,0 +1,22 @@
+{
+  "ticker": "AAPL",
+  "generation_date": "2025-09-21T02:57:05.555590",
+  "completion_date": "2025-09-21T03:17:41.103308",
+  "word_count": 3381,
+  "estimated_pages": 13,
+  "ai_engine": "Ollama Local LLM",
+  "model": "mistral:7b",
+  "report_sections": [
+    "Executive Summary",
+    "Market Research",
+    "Financial Analysis",
+    "Valuation Analysis",
+    "Investment Thesis",
+    "Risk Analysis"
+  ],
+  "data_sources": [
+    "Yahoo Finance",
+    "Ollama Local LLM Analysis",
+    "Public Company Filings"
+  ]
+}

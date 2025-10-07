@@ -1,0 +1,10 @@
+{
+  "ticker": "AAPL",
+  "recommendation": "BUY",
+  "target_price": 305.0,
+  "report_date": "September 20, 2025",
+  "markdown_file": "reports/AAPL_BUY_305_20250920_073940.md",
+  "word_count": 3273,
+  "ai_engine": "Ollama Local LLM",
+  "model": "mistral:7b"
+}

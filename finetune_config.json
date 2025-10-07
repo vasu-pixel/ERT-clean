@@ -1,0 +1,65 @@
+{
+  "finetuning_strategy": {
+    "model_selection": {
+      "base_model": "HuggingFaceTB/SmolLM-1.7B-Instruct",
+      "backup_models": ["meta-llama/Llama-3.1-8B", "microsoft/DialoGPT-medium"],
+      "target_size": "8B parameters for optimal balance"
+    },
+    "training_approach": {
+      "method": "LoRA",
+      "reason": "Parameter-efficient, preserves base capabilities",
+      "alternatives": {
+        "QLoRA": "For memory-constrained environments",
+        "Full_finetuning": "If compute resources allow"
+      }
+    },
+    "hyperparameters": {
+      "learning_rate": 2e-5,
+      "warmup_steps": 100,
+      "max_epochs": 3,
+      "batch_size": 4,
+      "gradient_accumulation_steps": 8,
+      "lora_rank": 16,
+      "lora_alpha": 32,
+      "lora_dropout": 0.1,
+      "weight_decay": 0.01,
+      "scheduler": "cosine_with_warmup"
+    }
+  },
+  "data_strategy": {
+    "training_size": "10000-50000 examples",
+    "validation_split": 0.15,
+    "test_split": 0.1,
+    "data_sources": [
+      "Institutional equity research reports",
+      "Financial analysis examples",
+      "Valuation methodologies",
+      "Industry analysis samples",
+      "Financial statement analysis",
+      "Investment thesis examples"
+    ]
+  },
+  "evaluation_metrics": {
+    "quantitative": [
+      "perplexity",
+      "bleu_score",
+      "rouge_scores",
+      "financial_accuracy",
+      "numerical_precision"
+    ],
+    "qualitative": [
+      "investment_recommendation_quality",
+      "financial_analysis_depth",
+      "industry_insight_accuracy",
+      "risk_assessment_completeness",
+      "valuation_methodology_soundness"
+    ]
+  },
+  "quality_controls": {
+    "catastrophic_forgetting_prevention": true,
+    "bias_monitoring": true,
+    "data_leakage_checks": true,
+    "overfitting_detection": true,
+    "validation_monitoring": "continuous"
+  }
+}

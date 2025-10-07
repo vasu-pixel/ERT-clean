@@ -1,0 +1,829 @@
+{
+  "ticker": "CVS",
+  "recommendation": "HOLD",
+  "target_price": 75.0,
+  "report_date": "September 21, 2025",
+  "markdown_file": "reports/CVS_HOLD_75_20250921_051512.md",
+  "word_count": 17003,
+  "estimated_pages": 69,
+  "ai_engine": "mistral:7b",
+  "guardrail_notes": [
+    "Section 'Financial Statement Deep Dive' word count 1218 below target 1300."
+  ],
+  "sections": [
+    {
+      "key": "executive_summary",
+      "title": "Executive Summary",
+      "word_count": 1099,
+      "min_word_count": 900,
+      "attempts": 3,
+      "require_citations": true,
+      "has_citations": true,
+      "index": 1
+    },
+    {
+      "key": "business_overview",
+      "title": "Business & Operating Model",
+      "word_count": 1419,
+      "min_word_count": 1200,
+      "attempts": 3,
+      "require_citations": true,
+      "has_citations": true,
+      "index": 2
+    },
+    {
+      "key": "segment_analysis",
+      "title": "Segment & Geographic Performance",
+      "word_count": 1280,
+      "min_word_count": 1100,
+      "attempts": 3,
+      "require_citations": true,
+      "has_citations": true,
+      "index": 3
+    },
+    {
+      "key": "technology_innovation",
+      "title": "Technology, R&D, and Innovation Pipeline",
+      "word_count": 1326,
+      "min_word_count": 900,
+      "attempts": 3,
+      "require_citations": true,
+      "has_citations": true,
+      "index": 4
+    },
+    {
+      "key": "go_to_market",
+      "title": "Go-to-Market & Customer Strategy",
+      "word_count": 1106,
+      "min_word_count": 900,
+      "attempts": 3,
+      "require_citations": true,
+      "has_citations": true,
+      "index": 5
+    },
+    {
+      "key": "competitive_landscape",
+      "title": "Competitive Landscape & Benchmarking",
+      "word_count": 1221,
+      "min_word_count": 1200,
+      "attempts": 3,
+      "require_citations": true,
+      "has_citations": true,
+      "index": 6
+    },
+    {
+      "key": "financial_statement_deep_dive",
+      "title": "Financial Statement Deep Dive",
+      "word_count": 1218,
+      "min_word_count": 1300,
+      "attempts": 3,
+      "require_citations": true,
+      "has_citations": true,
+      "index": 7
+    },
+    {
+      "key": "forecast_scenarios",
+      "title": "Forecast & Scenario Modeling",
+      "word_count": 1423,
+      "min_word_count": 1100,
+      "attempts": 3,
+      "require_citations": true,
+      "has_citations": true,
+      "index": 8
+    },
+    {
+      "key": "capital_allocation",
+      "title": "Capital Allocation & Balance Sheet Strategy",
+      "word_count": 922,
+      "min_word_count": 900,
+      "attempts": 2,
+      "require_citations": true,
+      "has_citations": true,
+      "index": 9
+    },
+    {
+      "key": "esg_regulatory",
+      "title": "ESG, Governance, and Regulatory Outlook",
+      "word_count": 1225,
+      "min_word_count": 900,
+      "attempts": 3,
+      "require_citations": true,
+      "has_citations": true,
+      "index": 10
+    },
+    {
+      "key": "risk_matrix",
+      "title": "Risk Matrix & Mitigations",
+      "word_count": 915,
+      "min_word_count": 900,
+      "attempts": 2,
+      "require_citations": true,
+      "has_citations": true,
+      "index": 11
+    },
+    {
+      "key": "valuation_deep_dive",
+      "title": "Valuation Deep Dive",
+      "word_count": 1649,
+      "min_word_count": 1300,
+      "attempts": 3,
+      "require_citations": true,
+      "has_citations": true,
+      "index": 12
+    },
+    {
+      "key": "catalysts_timeline",
+      "title": "Catalysts & Investment Timeline",
+      "word_count": 883,
+      "min_word_count": 800,
+      "attempts": 2,
+      "require_citations": true,
+      "has_citations": true,
+      "index": 13
+    }
+  ],
+  "appendices": [
+    "Key Financial Metrics",
+    "Deterministic Analytics Tables",
+    "Peer Benchmarking Snapshot",
+    "Primary Source Excerpts"
+  ],
+  "retrieval_sources": {
+    "executive_summary": [
+      {
+        "chunk_id": "CVS_chunk_74",
+        "source": "10-K",
+        "metadata": {
+          "source": "10-K",
+          "order": "74",
+          "filing": "full-submission.txt",
+          "accession": "0001558370-18-000707"
+        }
+      },
+      {
+        "chunk_id": "CVS_chunk_94",
+        "source": "10-K",
+        "metadata": {
+          "source": "10-K",
+          "order": "94",
+          "filing": "full-submission.txt",
+          "accession": "0001558370-18-000707"
+        }
+      },
+      {
+        "chunk_id": "CVS_chunk_20",
+        "source": "10-K",
+        "metadata": {
+          "source": "10-K",
+          "order": "20",
+          "filing": "full-submission.txt",
+          "accession": "0001558370-18-000707"
+        }
+      },
+      {
+        "chunk_id": "CVS_chunk_266",
+        "source": "10-K",
+        "metadata": {
+          "source": "10-K",
+          "order": "266",
+          "filing": "full-submission.txt",
+          "accession": "0001558370-18-000707"
+        }
+      },
+      {
+        "chunk_id": "CVS_chunk_268",
+        "source": "10-K",
+        "metadata": {
+          "source": "10-K",
+          "order": "268",
+          "filing": "full-submission.txt",
+          "accession": "0001558370-18-000707"
+        }
+      }
+    ],
+    "business_overview": [
+      {
+        "chunk_id": "CVS_chunk_54",
+        "source": "10-K",
+        "metadata": {
+          "source": "10-K",
+          "order": "54",
+          "filing": "full-submission.txt",
+          "accession": "0001558370-18-000707"
+        }
+      },
+      {
+        "chunk_id": "CVS_chunk_36",
+        "source": "10-K",
+        "metadata": {
+          "source": "10-K",
+          "order": "36",
+          "filing": "full-submission.txt",
+          "accession": "0001558370-18-000707"
+        }
+      },
+      {
+        "chunk_id": "CVS_chunk_52",
+        "source": "10-K",
+        "metadata": {
+          "source": "10-K",
+          "order": "52",
+          "filing": "full-submission.txt",
+          "accession": "0001558370-18-000707"
+        }
+      },
+      {
+        "chunk_id": "CVS_chunk_50",
+        "source": "10-K",
+        "metadata": {
+          "source": "10-K",
+          "order": "50",
+          "filing": "full-submission.txt",
+          "accession": "0001558370-18-000707"
+        }
+      },
+      {
+        "chunk_id": "CVS_chunk_60",
+        "source": "10-K",
+        "metadata": {
+          "source": "10-K",
+          "order": "60",
+          "filing": "full-submission.txt",
+          "accession": "0001558370-18-000707"
+        }
+      }
+    ],
+    "segment_analysis": [
+      {
+        "chunk_id": "CVS_chunk_244",
+        "source": "10-K",
+        "metadata": {
+          "source": "10-K",
+          "order": "244",
+          "filing": "full-submission.txt",
+          "accession": "0001558370-18-000707"
+        }
+      },
+      {
+        "chunk_id": "CVS_chunk_106",
+        "source": "10-K",
+        "metadata": {
+          "source": "10-K",
+          "order": "106",
+          "filing": "full-submission.txt",
+          "accession": "0001558370-18-000707"
+        }
+      },
+      {
+        "chunk_id": "CVS_chunk_180",
+        "source": "10-K",
+        "metadata": {
+          "source": "10-K",
+          "order": "180",
+          "filing": "full-submission.txt",
+          "accession": "0001558370-18-000707"
+        }
+      },
+      {
+        "chunk_id": "CVS_chunk_136",
+        "source": "10-K",
+        "metadata": {
+          "source": "10-K",
+          "order": "136",
+          "filing": "full-submission.txt",
+          "accession": "0001558370-18-000707"
+        }
+      },
+      {
+        "chunk_id": "CVS_chunk_134",
+        "source": "10-K",
+        "metadata": {
+          "source": "10-K",
+          "order": "134",
+          "filing": "full-submission.txt",
+          "accession": "0001558370-18-000707"
+        }
+      }
+    ],
+    "technology_innovation": [
+      {
+        "chunk_id": "CVS_chunk_14",
+        "source": "10-K",
+        "metadata": {
+          "source": "10-K",
+          "order": "14",
+          "filing": "full-submission.txt",
+          "accession": "0001558370-18-000707"
+        }
+      },
+      {
+        "chunk_id": "CVS_chunk_20",
+        "source": "10-K",
+        "metadata": {
+          "source": "10-K",
+          "order": "20",
+          "filing": "full-submission.txt",
+          "accession": "0001558370-18-000707"
+        }
+      },
+      {
+        "chunk_id": "CVS_chunk_12",
+        "source": "10-K",
+        "metadata": {
+          "source": "10-K",
+          "order": "12",
+          "filing": "full-submission.txt",
+          "accession": "0001558370-18-000707"
+        }
+      },
+      {
+        "chunk_id": "CVS_chunk_44",
+        "source": "10-K",
+        "metadata": {
+          "source": "10-K",
+          "order": "44",
+          "filing": "full-submission.txt",
+          "accession": "0001558370-18-000707"
+        }
+      },
+      {
+        "chunk_id": "CVS_chunk_50",
+        "source": "10-K",
+        "metadata": {
+          "source": "10-K",
+          "order": "50",
+          "filing": "full-submission.txt",
+          "accession": "0001558370-18-000707"
+        }
+      }
+    ],
+    "go_to_market": [
+      {
+        "chunk_id": "CVS_chunk_18",
+        "source": "10-K",
+        "metadata": {
+          "source": "10-K",
+          "order": "18",
+          "filing": "full-submission.txt",
+          "accession": "0001558370-18-000707"
+        }
+      },
+      {
+        "chunk_id": "CVS_chunk_146",
+        "source": "10-K",
+        "metadata": {
+          "source": "10-K",
+          "order": "146",
+          "filing": "full-submission.txt",
+          "accession": "0001558370-18-000707"
+        }
+      },
+      {
+        "chunk_id": "CVS_chunk_180",
+        "source": "10-K",
+        "metadata": {
+          "source": "10-K",
+          "order": "180",
+          "filing": "full-submission.txt",
+          "accession": "0001558370-18-000707"
+        }
+      },
+      {
+        "chunk_id": "CVS_chunk_26",
+        "source": "10-K",
+        "metadata": {
+          "source": "10-K",
+          "order": "26",
+          "filing": "full-submission.txt",
+          "accession": "0001558370-18-000707"
+        }
+      },
+      {
+        "chunk_id": "CVS_chunk_118",
+        "source": "10-K",
+        "metadata": {
+          "source": "10-K",
+          "order": "118",
+          "filing": "full-submission.txt",
+          "accession": "0001558370-18-000707"
+        }
+      }
+    ],
+    "competitive_landscape": [
+      {
+        "chunk_id": "CVS_chunk_36",
+        "source": "10-K",
+        "metadata": {
+          "source": "10-K",
+          "order": "36",
+          "filing": "full-submission.txt",
+          "accession": "0001558370-18-000707"
+        }
+      },
+      {
+        "chunk_id": "CVS_chunk_24",
+        "source": "10-K",
+        "metadata": {
+          "source": "10-K",
+          "order": "24",
+          "filing": "full-submission.txt",
+          "accession": "0001558370-18-000707"
+        }
+      },
+      {
+        "chunk_id": "CVS_chunk_20",
+        "source": "10-K",
+        "metadata": {
+          "source": "10-K",
+          "order": "20",
+          "filing": "full-submission.txt",
+          "accession": "0001558370-18-000707"
+        }
+      },
+      {
+        "chunk_id": "CVS_chunk_54",
+        "source": "10-K",
+        "metadata": {
+          "source": "10-K",
+          "order": "54",
+          "filing": "full-submission.txt",
+          "accession": "0001558370-18-000707"
+        }
+      },
+      {
+        "chunk_id": "CVS_chunk_240",
+        "source": "10-K",
+        "metadata": {
+          "source": "10-K",
+          "order": "240",
+          "filing": "full-submission.txt",
+          "accession": "0001558370-18-000707"
+        }
+      }
+    ],
+    "financial_statement_deep_dive": [
+      {
+        "chunk_id": "CVS_chunk_146",
+        "source": "10-K",
+        "metadata": {
+          "source": "10-K",
+          "order": "146",
+          "filing": "full-submission.txt",
+          "accession": "0001558370-18-000707"
+        }
+      },
+      {
+        "chunk_id": "CVS_chunk_154",
+        "source": "10-K",
+        "metadata": {
+          "source": "10-K",
+          "order": "154",
+          "filing": "full-submission.txt",
+          "accession": "0001558370-18-000707"
+        }
+      },
+      {
+        "chunk_id": "CVS_chunk_256",
+        "source": "10-K",
+        "metadata": {
+          "source": "10-K",
+          "order": "256",
+          "filing": "full-submission.txt",
+          "accession": "0001558370-18-000707"
+        }
+      },
+      {
+        "chunk_id": "CVS_chunk_80",
+        "source": "10-K",
+        "metadata": {
+          "source": "10-K",
+          "order": "80",
+          "filing": "full-submission.txt",
+          "accession": "0001558370-18-000707"
+        }
+      },
+      {
+        "chunk_id": "CVS_chunk_167",
+        "source": "10-K",
+        "metadata": {
+          "source": "10-K",
+          "order": "167",
+          "filing": "full-submission.txt",
+          "accession": "0001558370-18-000707"
+        }
+      }
+    ],
+    "forecast_scenarios": [
+      {
+        "chunk_id": "CVS_chunk_271",
+        "source": "10-K",
+        "metadata": {
+          "source": "10-K",
+          "order": "271",
+          "filing": "full-submission.txt",
+          "accession": "0001558370-18-000707"
+        }
+      },
+      {
+        "chunk_id": "CVS_chunk_0",
+        "source": "10-K",
+        "metadata": {
+          "source": "10-K",
+          "order": "0",
+          "filing": "full-submission.txt",
+          "accession": "0001558370-18-000707"
+        }
+      },
+      {
+        "chunk_id": "CVS_chunk_1",
+        "source": "10-K",
+        "metadata": {
+          "source": "10-K",
+          "order": "1",
+          "filing": "full-submission.txt",
+          "accession": "0001558370-18-000707"
+        }
+      },
+      {
+        "chunk_id": "CVS_chunk_2",
+        "source": "10-K",
+        "metadata": {
+          "source": "10-K",
+          "order": "2",
+          "filing": "full-submission.txt",
+          "accession": "0001558370-18-000707"
+        }
+      },
+      {
+        "chunk_id": "CVS_chunk_3",
+        "source": "10-K",
+        "metadata": {
+          "source": "10-K",
+          "order": "3",
+          "filing": "full-submission.txt",
+          "accession": "0001558370-18-000707"
+        }
+      }
+    ],
+    "capital_allocation": [
+      {
+        "chunk_id": "CVS_chunk_196",
+        "source": "10-K",
+        "metadata": {
+          "source": "10-K",
+          "order": "196",
+          "filing": "full-submission.txt",
+          "accession": "0001558370-18-000707"
+        }
+      },
+      {
+        "chunk_id": "CVS_chunk_20",
+        "source": "10-K",
+        "metadata": {
+          "source": "10-K",
+          "order": "20",
+          "filing": "full-submission.txt",
+          "accession": "0001558370-18-000707"
+        }
+      },
+      {
+        "chunk_id": "CVS_chunk_50",
+        "source": "10-K",
+        "metadata": {
+          "source": "10-K",
+          "order": "50",
+          "filing": "full-submission.txt",
+          "accession": "0001558370-18-000707"
+        }
+      },
+      {
+        "chunk_id": "CVS_chunk_18",
+        "source": "10-K",
+        "metadata": {
+          "source": "10-K",
+          "order": "18",
+          "filing": "full-submission.txt",
+          "accession": "0001558370-18-000707"
+        }
+      },
+      {
+        "chunk_id": "CVS_chunk_206",
+        "source": "10-K",
+        "metadata": {
+          "source": "10-K",
+          "order": "206",
+          "filing": "full-submission.txt",
+          "accession": "0001558370-18-000707"
+        }
+      }
+    ],
+    "esg_regulatory": [
+      {
+        "chunk_id": "CVS_chunk_46",
+        "source": "10-K",
+        "metadata": {
+          "source": "10-K",
+          "order": "46",
+          "filing": "full-submission.txt",
+          "accession": "0001558370-18-000707"
+        }
+      },
+      {
+        "chunk_id": "CVS_chunk_28",
+        "source": "10-K",
+        "metadata": {
+          "source": "10-K",
+          "order": "28",
+          "filing": "full-submission.txt",
+          "accession": "0001558370-18-000707"
+        }
+      },
+      {
+        "chunk_id": "CVS_chunk_38",
+        "source": "10-K",
+        "metadata": {
+          "source": "10-K",
+          "order": "38",
+          "filing": "full-submission.txt",
+          "accession": "0001558370-18-000707"
+        }
+      },
+      {
+        "chunk_id": "CVS_chunk_44",
+        "source": "10-K",
+        "metadata": {
+          "source": "10-K",
+          "order": "44",
+          "filing": "full-submission.txt",
+          "accession": "0001558370-18-000707"
+        }
+      },
+      {
+        "chunk_id": "CVS_chunk_34",
+        "source": "10-K",
+        "metadata": {
+          "source": "10-K",
+          "order": "34",
+          "filing": "full-submission.txt",
+          "accession": "0001558370-18-000707"
+        }
+      }
+    ],
+    "risk_matrix": [
+      {
+        "chunk_id": "CVS_chunk_144",
+        "source": "10-K",
+        "metadata": {
+          "source": "10-K",
+          "order": "144",
+          "filing": "full-submission.txt",
+          "accession": "0001558370-18-000707"
+        }
+      },
+      {
+        "chunk_id": "CVS_chunk_56",
+        "source": "10-K",
+        "metadata": {
+          "source": "10-K",
+          "order": "56",
+          "filing": "full-submission.txt",
+          "accession": "0001558370-18-000707"
+        }
+      },
+      {
+        "chunk_id": "CVS_chunk_42",
+        "source": "10-K",
+        "metadata": {
+          "source": "10-K",
+          "order": "42",
+          "filing": "full-submission.txt",
+          "accession": "0001558370-18-000707"
+        }
+      },
+      {
+        "chunk_id": "CVS_chunk_134",
+        "source": "10-K",
+        "metadata": {
+          "source": "10-K",
+          "order": "134",
+          "filing": "full-submission.txt",
+          "accession": "0001558370-18-000707"
+        }
+      },
+      {
+        "chunk_id": "CVS_chunk_32",
+        "source": "10-K",
+        "metadata": {
+          "source": "10-K",
+          "order": "32",
+          "filing": "full-submission.txt",
+          "accession": "0001558370-18-000707"
+        }
+      }
+    ],
+    "valuation_deep_dive": [
+      {
+        "chunk_id": "CVS_chunk_172",
+        "source": "10-K",
+        "metadata": {
+          "source": "10-K",
+          "order": "172",
+          "filing": "full-submission.txt",
+          "accession": "0001558370-18-000707"
+        }
+      },
+      {
+        "chunk_id": "CVS_chunk_170",
+        "source": "10-K",
+        "metadata": {
+          "source": "10-K",
+          "order": "170",
+          "filing": "full-submission.txt",
+          "accession": "0001558370-18-000707"
+        }
+      },
+      {
+        "chunk_id": "CVS_chunk_80",
+        "source": "10-K",
+        "metadata": {
+          "source": "10-K",
+          "order": "80",
+          "filing": "full-submission.txt",
+          "accession": "0001558370-18-000707"
+        }
+      },
+      {
+        "chunk_id": "CVS_chunk_146",
+        "source": "10-K",
+        "metadata": {
+          "source": "10-K",
+          "order": "146",
+          "filing": "full-submission.txt",
+          "accession": "0001558370-18-000707"
+        }
+      },
+      {
+        "chunk_id": "CVS_chunk_106",
+        "source": "10-K",
+        "metadata": {
+          "source": "10-K",
+          "order": "106",
+          "filing": "full-submission.txt",
+          "accession": "0001558370-18-000707"
+        }
+      }
+    ],
+    "catalysts_timeline": [
+      {
+        "chunk_id": "CVS_chunk_186",
+        "source": "10-K",
+        "metadata": {
+          "source": "10-K",
+          "order": "186",
+          "filing": "full-submission.txt",
+          "accession": "0001558370-18-000707"
+        }
+      },
+      {
+        "chunk_id": "CVS_chunk_130",
+        "source": "10-K",
+        "metadata": {
+          "source": "10-K",
+          "order": "130",
+          "filing": "full-submission.txt",
+          "accession": "0001558370-18-000707"
+        }
+      },
+      {
+        "chunk_id": "CVS_chunk_44",
+        "source": "10-K",
+        "metadata": {
+          "source": "10-K",
+          "order": "44",
+          "filing": "full-submission.txt",
+          "accession": "0001558370-18-000707"
+        }
+      },
+      {
+        "chunk_id": "CVS_chunk_194",
+        "source": "10-K",
+        "metadata": {
+          "source": "10-K",
+          "order": "194",
+          "filing": "full-submission.txt",
+          "accession": "0001558370-18-000707"
+        }
+      },
+      {
+        "chunk_id": "CVS_chunk_64",
+        "source": "10-K",
+        "metadata": {
+          "source": "10-K",
+          "order": "64",
+          "filing": "full-submission.txt",
+          "accession": "0001558370-18-000707"
+        }
+      }
+    ]
+  }
+}

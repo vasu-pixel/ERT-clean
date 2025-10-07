@@ -1,0 +1,14 @@
+{
+  "default": {
+    "tax_rate": 0.24,
+    "payout_ratio": 0.25,
+    "segments": [
+      {
+        "name": "Consolidated",
+        "revenue_share": 1.0,
+        "revenue_growth_adjustments": [],
+        "ebit_margin": null
+      }
+    ]
+  }
+}

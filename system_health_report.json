@@ -1,0 +1,56 @@
+{
+  "timestamp": "2025-09-22T03:02:20.474420",
+  "overall_status": "HEALTHY",
+  "health_score": 100.0,
+  "summary": {
+    "total_checks": 8,
+    "passed": 8,
+    "failed": 0,
+    "errors": 0
+  },
+  "detailed_results": [
+    {
+      "name": "Import Dependencies",
+      "status": "PASS",
+      "details": "Check completed"
+    },
+    {
+      "name": "Ollama Engine Health",
+      "status": "PASS",
+      "details": "Check completed"
+    },
+    {
+      "name": "OpenAI Engine Health",
+      "status": "PASS",
+      "details": "Check completed"
+    },
+    {
+      "name": "Data Validator",
+      "status": "PASS",
+      "details": "Check completed"
+    },
+    {
+      "name": "Data Pipeline",
+      "status": "PASS",
+      "details": "Check completed"
+    },
+    {
+      "name": "Report Generator",
+      "status": "PASS",
+      "details": "Check completed"
+    },
+    {
+      "name": "File System Permissions",
+      "status": "PASS",
+      "details": "Check completed"
+    },
+    {
+      "name": "Configuration Files",
+      "status": "PASS",
+      "details": "Check completed"
+    }
+  ],
+  "recommendations": [
+    "System is healthy! No immediate actions required."
+  ]
+}

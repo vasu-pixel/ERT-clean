@@ -1,0 +1,43 @@
+services:
+  - type: web
+    name: ert-dashboard
+    env: python
+    plan: starter
+    buildCommand: pip install --upgrade pip && pip install --no-cache-dir -r requirements.txt
+    startCommand: gunicorn --worker-class eventlet -w 1 --bind 0.0.0.0:$PORT wsgi:app
+    healthCheckPath: /health
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.10.12
+      - key: FLASK_ENV
+        value: production
+      - key: PYTHONPATH
+        value: /opt/render/project/src
+      - key: ADVANCED_FEATURES
+        value: true
+      - key: OLLAMA_INTEGRATION
+        value: false
+      - key: OPENAI_INTEGRATION
+        value: false
+      - key: REMOTE_LLM_INTEGRATION
+        value: true
+      - key: ERT_LLM_BACKEND_URL
+        value: http://115.231.176.132:11434
+      - key: ERT_LLM_API_KEY
+        value: ert-vast-api-key-2024
+      - key: OLLAMA_MODEL
+        value: gpt-oss:20b
+      - key: ERT_LLM_TIMEOUT
+        value: 120
+      - key: CACHE_TTL_SECONDS
+        value: 300
+      - key: MAX_TICKER_LENGTH
+        value: 12
+      - key: MAX_QUEUE_SIZE
+        value: 100
+      - key: ERT_HOST
+        value: 0.0.0.0
+      - key: ERT_DEBUG
+        value: false
+      - key: ERT_SECRET_KEY
+        generateValue: true

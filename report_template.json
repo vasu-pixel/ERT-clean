@@ -1,0 +1,136 @@
+{
+  "default_min_words": 700,
+  "sections": [
+    {
+      "key": "executive_summary",
+      "title": "Executive Summary",
+      "description": "Institutional-grade overview summarizing recommendation, valuation, catalysts, and risks.",
+      "context_query": "executive summary",
+      "include_deterministic": true,
+      "require_citations": true,
+      "min_word_count": 900
+    },
+    {
+      "key": "business_overview",
+      "title": "Business & Operating Model",
+      "description": "Break down corporate structure, revenue streams, products/services, geographic mix, customer segments, and business model economics.",
+      "context_query": "business model operations",
+      "include_deterministic": false,
+      "require_citations": true,
+      "min_word_count": 1200
+    },
+    {
+      "key": "segment_analysis",
+      "title": "Segment & Geographic Performance",
+      "description": "Analyze each operating segment with revenue, profit contributions, growth, and competitive positioning by geography.",
+      "context_query": "segment revenue performance",
+      "include_deterministic": true,
+      "require_citations": true,
+      "min_word_count": 1100
+    },
+    {
+      "key": "technology_innovation",
+      "title": "Technology, R&D, and Innovation Pipeline",
+      "description": "Detail technology stack, R&D strategy, patents, product roadmap, partnerships, and innovation edge.",
+      "context_query": "technology innovation",
+      "include_deterministic": false,
+      "require_citations": true,
+      "min_word_count": 900
+    },
+    {
+      "key": "go_to_market",
+      "title": "Go-to-Market & Customer Strategy",
+      "description": "Discuss distribution, sales motion, marketing, customer success, retention, monetization levers, and pricing strategy.",
+      "context_query": "sales marketing strategy",
+      "include_deterministic": false,
+      "require_citations": true,
+      "min_word_count": 900
+    },
+    {
+      "key": "competitive_landscape",
+      "title": "Competitive Landscape & Benchmarking",
+      "description": "Benchmark against principal peers with quantified comparisons, strategic moats, and share dynamics.",
+      "context_query": "competition benchmarking",
+      "include_deterministic": true,
+      "require_citations": true,
+      "min_word_count": 1200
+    },
+    {
+      "key": "financial_statement_deep_dive",
+      "title": "Financial Statement Deep Dive",
+      "description": "Provide detailed P&L, balance sheet, and cash flow analysis with historical trends, segment margins, capital structure, and working capital.",
+      "context_query": "financial statements",
+      "include_deterministic": true,
+      "require_citations": true,
+      "min_word_count": 1300
+    },
+    {
+      "key": "forecast_scenarios",
+      "title": "Forecast & Scenario Modeling",
+      "description": "Present base, bull, and bear forecasts with underlying assumptions, sensitivity tables, and implications for valuation.",
+      "context_query": "forecast scenario",
+      "include_deterministic": true,
+      "require_citations": true,
+      "min_word_count": 1100
+    },
+    {
+      "key": "capital_allocation",
+      "title": "Capital Allocation & Balance Sheet Strategy",
+      "description": "Evaluate cash deployment, M&A, buybacks, dividends, leverage policy, liquidity, and credit profile.",
+      "context_query": "capital allocation strategy",
+      "include_deterministic": true,
+      "require_citations": true,
+      "min_word_count": 900
+    },
+    {
+      "key": "esg_regulatory",
+      "title": "ESG, Governance, and Regulatory Outlook",
+      "description": "Assess environmental, social, governance practices, regulatory risks, compliance landscape, and sustainability metrics.",
+      "context_query": "esg regulatory",
+      "include_deterministic": false,
+      "require_citations": true,
+      "min_word_count": 900
+    },
+    {
+      "key": "risk_matrix",
+      "title": "Risk Matrix & Mitigations",
+      "description": "Build categorized risk matrix covering business, financial, operational, geopolitical, and technology risks with mitigations.",
+      "context_query": "risk factors",
+      "include_deterministic": true,
+      "require_citations": true,
+      "min_word_count": 900
+    },
+    {
+      "key": "valuation_deep_dive",
+      "title": "Valuation Deep Dive",
+      "description": "Expand on DCF, relative valuation, precedent transactions, and multiples; include valuation bridges, sensitivities, and peer comparison tables.",
+      "context_query": "valuation analysis",
+      "include_deterministic": true,
+      "require_citations": true,
+      "min_word_count": 1300
+    },
+    {
+      "key": "catalysts_timeline",
+      "title": "Catalysts & Investment Timeline",
+      "description": "Lay out short-, medium-, and long-term catalysts, milestone timeline, monitoring indicators, and potential downside triggers.",
+      "context_query": "investment catalysts timeline",
+      "include_deterministic": true,
+      "require_citations": true,
+      "min_word_count": 800
+    }
+  ],
+  "appendices": [
+    {
+      "key": "deterministic_tables",
+      "title": "Deterministic Analytics Tables"
+    },
+    {
+      "key": "peer_benchmark_table",
+      "title": "Peer Benchmarking Snapshot"
+    },
+    {
+      "key": "retrieval_sources",
+      "title": "Primary Source Excerpts"
+    }
+  ]
+}

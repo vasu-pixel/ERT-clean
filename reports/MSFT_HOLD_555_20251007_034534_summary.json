@@ -1,0 +1,1212 @@
+{
+  "ticker": "MSFT",
+  "recommendation": "HOLD",
+  "target_price": 554.9985,
+  "report_date": "October 07, 2025",
+  "markdown_file": "reports/MSFT_HOLD_555_20251007_034534.md",
+  "word_count": 3840,
+  "estimated_pages": 16,
+  "ai_engine": "gpt-oss:20b",
+  "guardrail_notes": [
+    "AI target ($555.00) deviates >30% from DCF ($225.70).",
+    "Section 'Executive Summary' lacks required citations.",
+    "Section 'Executive Summary' word count 147 below target 900.",
+    "Section 'Business & Operating Model' lacks required citations.",
+    "Section 'Business & Operating Model' word count 149 below target 1200.",
+    "Section 'Segment & Geographic Performance' lacks required citations.",
+    "Section 'Segment & Geographic Performance' word count 149 below target 1100.",
+    "Section 'Technology, R&D, and Innovation Pipeline' lacks required citations.",
+    "Section 'Technology, R&D, and Innovation Pipeline' word count 149 below target 900.",
+    "Section 'Go-to-Market & Customer Strategy' lacks required citations.",
+    "Section 'Go-to-Market & Customer Strategy' word count 154 below target 900.",
+    "Section 'Competitive Landscape & Benchmarking' lacks required citations.",
+    "Section 'Competitive Landscape & Benchmarking' word count 149 below target 1200.",
+    "Section 'Financial Statement Deep Dive' lacks required citations.",
+    "Section 'Financial Statement Deep Dive' word count 159 below target 1300.",
+    "Section 'Forecast & Scenario Modeling' lacks required citations.",
+    "Section 'Forecast & Scenario Modeling' word count 149 below target 1100.",
+    "Section 'Capital Allocation & Balance Sheet Strategy' lacks required citations.",
+    "Section 'Capital Allocation & Balance Sheet Strategy' word count 149 below target 900.",
+    "Section 'ESG, Governance, and Regulatory Outlook' lacks required citations.",
+    "Section 'ESG, Governance, and Regulatory Outlook' word count 149 below target 900.",
+    "Section 'Risk Matrix & Mitigations' lacks required citations.",
+    "Section 'Risk Matrix & Mitigations' word count 149 below target 900.",
+    "Section 'Valuation Deep Dive' lacks required citations.",
+    "Section 'Valuation Deep Dive' word count 154 below target 1300.",
+    "Section 'Catalysts & Investment Timeline' lacks required citations.",
+    "Section 'Catalysts & Investment Timeline' word count 149 below target 800.",
+    "Missing required section: Financial Analysis",
+    "Missing required section: Investment Thesis",
+    "Missing required section: Risk Analysis",
+    "Error content found: temporarily unavailable",
+    "Multiple different target prices found - check consistency",
+    "Report may be too short: 3840 words (expected 5000+)"
+  ],
+  "sections": [
+    {
+      "key": "executive_summary",
+      "title": "Executive Summary",
+      "word_count": 147,
+      "min_word_count": 900,
+      "attempts": 1,
+      "require_citations": true,
+      "has_citations": false,
+      "index": 1
+    },
+    {
+      "key": "business_overview",
+      "title": "Business & Operating Model",
+      "word_count": 149,
+      "min_word_count": 1200,
+      "attempts": 1,
+      "require_citations": true,
+      "has_citations": false,
+      "index": 2
+    },
+    {
+      "key": "segment_analysis",
+      "title": "Segment & Geographic Performance",
+      "word_count": 149,
+      "min_word_count": 1100,
+      "attempts": 1,
+      "require_citations": true,
+      "has_citations": false,
+      "index": 3
+    },
+    {
+      "key": "technology_innovation",
+      "title": "Technology, R&D, and Innovation Pipeline",
+      "word_count": 149,
+      "min_word_count": 900,
+      "attempts": 1,
+      "require_citations": true,
+      "has_citations": false,
+      "index": 4
+    },
+    {
+      "key": "go_to_market",
+      "title": "Go-to-Market & Customer Strategy",
+      "word_count": 154,
+      "min_word_count": 900,
+      "attempts": 1,
+      "require_citations": true,
+      "has_citations": false,
+      "index": 5
+    },
+    {
+      "key": "competitive_landscape",
+      "title": "Competitive Landscape & Benchmarking",
+      "word_count": 149,
+      "min_word_count": 1200,
+      "attempts": 1,
+      "require_citations": true,
+      "has_citations": false,
+      "index": 6
+    },
+    {
+      "key": "financial_statement_deep_dive",
+      "title": "Financial Statement Deep Dive",
+      "word_count": 159,
+      "min_word_count": 1300,
+      "attempts": 1,
+      "require_citations": true,
+      "has_citations": false,
+      "index": 7
+    },
+    {
+      "key": "forecast_scenarios",
+      "title": "Forecast & Scenario Modeling",
+      "word_count": 149,
+      "min_word_count": 1100,
+      "attempts": 1,
+      "require_citations": true,
+      "has_citations": false,
+      "index": 8
+    },
+    {
+      "key": "capital_allocation",
+      "title": "Capital Allocation & Balance Sheet Strategy",
+      "word_count": 149,
+      "min_word_count": 900,
+      "attempts": 1,
+      "require_citations": true,
+      "has_citations": false,
+      "index": 9
+    },
+    {
+      "key": "esg_regulatory",
+      "title": "ESG, Governance, and Regulatory Outlook",
+      "word_count": 149,
+      "min_word_count": 900,
+      "attempts": 1,
+      "require_citations": true,
+      "has_citations": false,
+      "index": 10
+    },
+    {
+      "key": "risk_matrix",
+      "title": "Risk Matrix & Mitigations",
+      "word_count": 149,
+      "min_word_count": 900,
+      "attempts": 1,
+      "require_citations": true,
+      "has_citations": false,
+      "index": 11
+    },
+    {
+      "key": "valuation_deep_dive",
+      "title": "Valuation Deep Dive",
+      "word_count": 154,
+      "min_word_count": 1300,
+      "attempts": 1,
+      "require_citations": true,
+      "has_citations": false,
+      "index": 12
+    },
+    {
+      "key": "catalysts_timeline",
+      "title": "Catalysts & Investment Timeline",
+      "word_count": 149,
+      "min_word_count": 800,
+      "attempts": 1,
+      "require_citations": true,
+      "has_citations": false,
+      "index": 13
+    }
+  ],
+  "appendices": [
+    "Key Financial Metrics",
+    "Deterministic Analytics Tables",
+    "Peer Benchmarking Snapshot",
+    "Primary Source Excerpts"
+  ],
+  "retrieval_sources": {
+    "executive_summary": [
+      {
+        "chunk_id": "MSFT_chunk_250",
+        "source": "10-K",
+        "metadata": {
+          "source": "10-K",
+          "order": "250",
+          "filing": "full-submission.txt",
+          "accession": "0001032210-99-001375"
+        }
+      },
+      {
+        "chunk_id": "MSFT_chunk_64",
+        "source": "10-K",
+        "metadata": {
+          "source": "10-K",
+          "order": "64",
+          "filing": "full-submission.txt",
+          "accession": "0001032210-99-001375"
+        }
+      },
+      {
+        "chunk_id": "MSFT_chunk_157",
+        "source": "10-K",
+        "metadata": {
+          "source": "10-K",
+          "order": "157",
+          "filing": "full-submission.txt",
+          "accession": "0001032210-99-001375"
+        }
+      },
+      {
+        "chunk_id": "MSFT_chunk_251",
+        "source": "10-K",
+        "metadata": {
+          "source": "10-K",
+          "order": "251",
+          "filing": "full-submission.txt",
+          "accession": "0001032210-99-001375"
+        }
+      },
+      {
+        "chunk_id": "MSFT_chunk_253",
+        "source": "10-K",
+        "metadata": {
+          "source": "10-K",
+          "order": "253",
+          "filing": "full-submission.txt",
+          "accession": "0001032210-99-001375"
+        }
+      }
+    ],
+    "business_overview": [
+      {
+        "chunk_id": "MSFT_chunk_170",
+        "source": "10-K",
+        "metadata": {
+          "source": "10-K",
+          "order": "170",
+          "filing": "full-submission.txt",
+          "accession": "0001032210-99-001375"
+        }
+      },
+      {
+        "chunk_id": "MSFT_chunk_196",
+        "source": "10-K",
+        "metadata": {
+          "source": "10-K",
+          "order": "196",
+          "filing": "full-submission.txt",
+          "accession": "0001032210-99-001375"
+        }
+      },
+      {
+        "chunk_id": "MSFT_chunk_47",
+        "source": "10-K",
+        "metadata": {
+          "source": "10-K",
+          "order": "47",
+          "filing": "full-submission.txt",
+          "accession": "0001032210-99-001375"
+        }
+      },
+      {
+        "chunk_id": "MSFT_chunk_198",
+        "source": "10-K",
+        "metadata": {
+          "source": "10-K",
+          "order": "198",
+          "filing": "full-submission.txt",
+          "accession": "0001032210-99-001375"
+        }
+      },
+      {
+        "chunk_id": "MSFT_chunk_9",
+        "source": "10-K",
+        "metadata": {
+          "source": "10-K",
+          "order": "9",
+          "filing": "full-submission.txt",
+          "accession": "0001032210-99-001375"
+        }
+      }
+    ],
+    "segment_analysis": [
+      {
+        "chunk_id": "MSFT_chunk_8",
+        "source": "10-K",
+        "metadata": {
+          "source": "10-K",
+          "order": "8",
+          "filing": "full-submission.txt",
+          "accession": "0001032210-99-001375"
+        }
+      },
+      {
+        "chunk_id": "MSFT_chunk_7",
+        "source": "10-K",
+        "metadata": {
+          "source": "10-K",
+          "order": "7",
+          "filing": "full-submission.txt",
+          "accession": "0001032210-99-001375"
+        }
+      },
+      {
+        "chunk_id": "MSFT_chunk_10",
+        "source": "10-K",
+        "metadata": {
+          "source": "10-K",
+          "order": "10",
+          "filing": "full-submission.txt",
+          "accession": "0001032210-99-001375"
+        }
+      },
+      {
+        "chunk_id": "MSFT_chunk_215",
+        "source": "10-K",
+        "metadata": {
+          "source": "10-K",
+          "order": "215",
+          "filing": "full-submission.txt",
+          "accession": "0001032210-99-001375"
+        }
+      },
+      {
+        "chunk_id": "MSFT_chunk_194",
+        "source": "10-K",
+        "metadata": {
+          "source": "10-K",
+          "order": "194",
+          "filing": "full-submission.txt",
+          "accession": "0001032210-99-001375"
+        }
+      }
+    ],
+    "technology_innovation": [
+      {
+        "chunk_id": "MSFT_chunk_36",
+        "source": "10-K",
+        "metadata": {
+          "source": "10-K",
+          "order": "36",
+          "filing": "full-submission.txt",
+          "accession": "0001032210-99-001375"
+        }
+      },
+      {
+        "chunk_id": "MSFT_chunk_251",
+        "source": "10-K",
+        "metadata": {
+          "source": "10-K",
+          "order": "251",
+          "filing": "full-submission.txt",
+          "accession": "0001032210-99-001375"
+        }
+      },
+      {
+        "chunk_id": "MSFT_chunk_55",
+        "source": "10-K",
+        "metadata": {
+          "source": "10-K",
+          "order": "55",
+          "filing": "full-submission.txt",
+          "accession": "0001032210-99-001375"
+        }
+      },
+      {
+        "chunk_id": "MSFT_chunk_248",
+        "source": "10-K",
+        "metadata": {
+          "source": "10-K",
+          "order": "248",
+          "filing": "full-submission.txt",
+          "accession": "0001032210-99-001375"
+        }
+      },
+      {
+        "chunk_id": "MSFT_chunk_249",
+        "source": "10-K",
+        "metadata": {
+          "source": "10-K",
+          "order": "249",
+          "filing": "full-submission.txt",
+          "accession": "0001032210-99-001375"
+        }
+      }
+    ],
+    "go_to_market": [
+      {
+        "chunk_id": "MSFT_chunk_196",
+        "source": "10-K",
+        "metadata": {
+          "source": "10-K",
+          "order": "196",
+          "filing": "full-submission.txt",
+          "accession": "0001032210-99-001375"
+        }
+      },
+      {
+        "chunk_id": "MSFT_chunk_32",
+        "source": "10-K",
+        "metadata": {
+          "source": "10-K",
+          "order": "32",
+          "filing": "full-submission.txt",
+          "accession": "0001032210-99-001375"
+        }
+      },
+      {
+        "chunk_id": "MSFT_chunk_183",
+        "source": "10-K",
+        "metadata": {
+          "source": "10-K",
+          "order": "183",
+          "filing": "full-submission.txt",
+          "accession": "0001032210-99-001375"
+        }
+      },
+      {
+        "chunk_id": "MSFT_chunk_36",
+        "source": "10-K",
+        "metadata": {
+          "source": "10-K",
+          "order": "36",
+          "filing": "full-submission.txt",
+          "accession": "0001032210-99-001375"
+        }
+      },
+      {
+        "chunk_id": "MSFT_chunk_42",
+        "source": "10-K",
+        "metadata": {
+          "source": "10-K",
+          "order": "42",
+          "filing": "full-submission.txt",
+          "accession": "0001032210-99-001375"
+        }
+      }
+    ],
+    "competitive_landscape": [
+      {
+        "chunk_id": "MSFT_chunk_53",
+        "source": "10-K",
+        "metadata": {
+          "source": "10-K",
+          "order": "53",
+          "filing": "full-submission.txt",
+          "accession": "0001032210-99-001375"
+        }
+      },
+      {
+        "chunk_id": "MSFT_chunk_190",
+        "source": "10-K",
+        "metadata": {
+          "source": "10-K",
+          "order": "190",
+          "filing": "full-submission.txt",
+          "accession": "0001032210-99-001375"
+        }
+      },
+      {
+        "chunk_id": "MSFT_chunk_59",
+        "source": "10-K",
+        "metadata": {
+          "source": "10-K",
+          "order": "59",
+          "filing": "full-submission.txt",
+          "accession": "0001032210-99-001375"
+        }
+      },
+      {
+        "chunk_id": "MSFT_chunk_54",
+        "source": "10-K",
+        "metadata": {
+          "source": "10-K",
+          "order": "54",
+          "filing": "full-submission.txt",
+          "accession": "0001032210-99-001375"
+        }
+      },
+      {
+        "chunk_id": "MSFT_chunk_61",
+        "source": "10-K",
+        "metadata": {
+          "source": "10-K",
+          "order": "61",
+          "filing": "full-submission.txt",
+          "accession": "0001032210-99-001375"
+        }
+      }
+    ],
+    "financial_statement_deep_dive": [
+      {
+        "chunk_id": "MSFT_chunk_204",
+        "source": "10-K",
+        "metadata": {
+          "source": "10-K",
+          "order": "204",
+          "filing": "full-submission.txt",
+          "accession": "0001032210-99-001375"
+        }
+      },
+      {
+        "chunk_id": "MSFT_chunk_265",
+        "source": "10-K",
+        "metadata": {
+          "source": "10-K",
+          "order": "265",
+          "filing": "full-submission.txt",
+          "accession": "0001032210-99-001375"
+        }
+      },
+      {
+        "chunk_id": "MSFT_chunk_213",
+        "source": "10-K",
+        "metadata": {
+          "source": "10-K",
+          "order": "213",
+          "filing": "full-submission.txt",
+          "accession": "0001032210-99-001375"
+        }
+      },
+      {
+        "chunk_id": "MSFT_chunk_259",
+        "source": "10-K",
+        "metadata": {
+          "source": "10-K",
+          "order": "259",
+          "filing": "full-submission.txt",
+          "accession": "0001032210-99-001375"
+        }
+      },
+      {
+        "chunk_id": "MSFT_chunk_76",
+        "source": "10-K",
+        "metadata": {
+          "source": "10-K",
+          "order": "76",
+          "filing": "full-submission.txt",
+          "accession": "0001032210-99-001375"
+        }
+      }
+    ],
+    "forecast_scenarios": [
+      {
+        "chunk_id": "MSFT_chunk_0",
+        "source": "10-K",
+        "metadata": {
+          "source": "10-K",
+          "order": "0",
+          "filing": "full-submission.txt",
+          "accession": "0001032210-99-001375"
+        }
+      },
+      {
+        "chunk_id": "MSFT_chunk_1",
+        "source": "10-K",
+        "metadata": {
+          "source": "10-K",
+          "order": "1",
+          "filing": "full-submission.txt",
+          "accession": "0001032210-99-001375"
+        }
+      },
+      {
+        "chunk_id": "MSFT_chunk_2",
+        "source": "10-K",
+        "metadata": {
+          "source": "10-K",
+          "order": "2",
+          "filing": "full-submission.txt",
+          "accession": "0001032210-99-001375"
+        }
+      },
+      {
+        "chunk_id": "MSFT_chunk_3",
+        "source": "10-K",
+        "metadata": {
+          "source": "10-K",
+          "order": "3",
+          "filing": "full-submission.txt",
+          "accession": "0001032210-99-001375"
+        }
+      },
+      {
+        "chunk_id": "MSFT_chunk_4",
+        "source": "10-K",
+        "metadata": {
+          "source": "10-K",
+          "order": "4",
+          "filing": "full-submission.txt",
+          "accession": "0001032210-99-001375"
+        }
+      }
+    ],
+    "capital_allocation": [
+      {
+        "chunk_id": "MSFT_chunk_130",
+        "source": "10-K",
+        "metadata": {
+          "source": "10-K",
+          "order": "130",
+          "filing": "full-submission.txt",
+          "accession": "0001032210-99-001375"
+        }
+      },
+      {
+        "chunk_id": "MSFT_chunk_17",
+        "source": "10-K",
+        "metadata": {
+          "source": "10-K",
+          "order": "17",
+          "filing": "full-submission.txt",
+          "accession": "0001032210-99-001375"
+        }
+      },
+      {
+        "chunk_id": "MSFT_chunk_73",
+        "source": "10-K",
+        "metadata": {
+          "source": "10-K",
+          "order": "73",
+          "filing": "full-submission.txt",
+          "accession": "0001032210-99-001375"
+        }
+      },
+      {
+        "chunk_id": "MSFT_chunk_92",
+        "source": "10-K",
+        "metadata": {
+          "source": "10-K",
+          "order": "92",
+          "filing": "full-submission.txt",
+          "accession": "0001032210-99-001375"
+        }
+      },
+      {
+        "chunk_id": "MSFT_chunk_7",
+        "source": "10-K",
+        "metadata": {
+          "source": "10-K",
+          "order": "7",
+          "filing": "full-submission.txt",
+          "accession": "0001032210-99-001375"
+        }
+      }
+    ],
+    "esg_regulatory": [
+      {
+        "chunk_id": "MSFT_chunk_186",
+        "source": "10-K",
+        "metadata": {
+          "source": "10-K",
+          "order": "186",
+          "filing": "full-submission.txt",
+          "accession": "0001032210-99-001375"
+        }
+      },
+      {
+        "chunk_id": "MSFT_chunk_0",
+        "source": "10-K",
+        "metadata": {
+          "source": "10-K",
+          "order": "0",
+          "filing": "full-submission.txt",
+          "accession": "0001032210-99-001375"
+        }
+      },
+      {
+        "chunk_id": "MSFT_chunk_1",
+        "source": "10-K",
+        "metadata": {
+          "source": "10-K",
+          "order": "1",
+          "filing": "full-submission.txt",
+          "accession": "0001032210-99-001375"
+        }
+      },
+      {
+        "chunk_id": "MSFT_chunk_2",
+        "source": "10-K",
+        "metadata": {
+          "source": "10-K",
+          "order": "2",
+          "filing": "full-submission.txt",
+          "accession": "0001032210-99-001375"
+        }
+      },
+      {
+        "chunk_id": "MSFT_chunk_3",
+        "source": "10-K",
+        "metadata": {
+          "source": "10-K",
+          "order": "3",
+          "filing": "full-submission.txt",
+          "accession": "0001032210-99-001375"
+        }
+      }
+    ],
+    "risk_matrix": [
+      {
+        "chunk_id": "MSFT_chunk_197",
+        "source": "10-K",
+        "metadata": {
+          "source": "10-K",
+          "order": "197",
+          "filing": "full-submission.txt",
+          "accession": "0001032210-99-001375"
+        }
+      },
+      {
+        "chunk_id": "MSFT_chunk_192",
+        "source": "10-K",
+        "metadata": {
+          "source": "10-K",
+          "order": "192",
+          "filing": "full-submission.txt",
+          "accession": "0001032210-99-001375"
+        }
+      },
+      {
+        "chunk_id": "MSFT_chunk_198",
+        "source": "10-K",
+        "metadata": {
+          "source": "10-K",
+          "order": "198",
+          "filing": "full-submission.txt",
+          "accession": "0001032210-99-001375"
+        }
+      },
+      {
+        "chunk_id": "MSFT_chunk_52",
+        "source": "10-K",
+        "metadata": {
+          "source": "10-K",
+          "order": "52",
+          "filing": "full-submission.txt",
+          "accession": "0001032210-99-001375"
+        }
+      },
+      {
+        "chunk_id": "MSFT_chunk_60",
+        "source": "10-K",
+        "metadata": {
+          "source": "10-K",
+          "order": "60",
+          "filing": "full-submission.txt",
+          "accession": "0001032210-99-001375"
+        }
+      }
+    ],
+    "valuation_deep_dive": [
+      {
+        "chunk_id": "MSFT_chunk_168",
+        "source": "10-K",
+        "metadata": {
+          "source": "10-K",
+          "order": "168",
+          "filing": "full-submission.txt",
+          "accession": "0001032210-99-001375"
+        }
+      },
+      {
+        "chunk_id": "MSFT_chunk_239",
+        "source": "10-K",
+        "metadata": {
+          "source": "10-K",
+          "order": "239",
+          "filing": "full-submission.txt",
+          "accession": "0001032210-99-001375"
+        }
+      },
+      {
+        "chunk_id": "MSFT_chunk_22",
+        "source": "10-K",
+        "metadata": {
+          "source": "10-K",
+          "order": "22",
+          "filing": "full-submission.txt",
+          "accession": "0001032210-99-001375"
+        }
+      },
+      {
+        "chunk_id": "MSFT_chunk_5",
+        "source": "10-K",
+        "metadata": {
+          "source": "10-K",
+          "order": "5",
+          "filing": "full-submission.txt",
+          "accession": "0001032210-99-001375"
+        }
+      },
+      {
+        "chunk_id": "MSFT_chunk_198",
+        "source": "10-K",
+        "metadata": {
+          "source": "10-K",
+          "order": "198",
+          "filing": "full-submission.txt",
+          "accession": "0001032210-99-001375"
+        }
+      }
+    ],
+    "catalysts_timeline": [
+      {
+        "chunk_id": "MSFT_chunk_184",
+        "source": "10-K",
+        "metadata": {
+          "source": "10-K",
+          "order": "184",
+          "filing": "full-submission.txt",
+          "accession": "0001032210-99-001375"
+        }
+      },
+      {
+        "chunk_id": "MSFT_chunk_185",
+        "source": "10-K",
+        "metadata": {
+          "source": "10-K",
+          "order": "185",
+          "filing": "full-submission.txt",
+          "accession": "0001032210-99-001375"
+        }
+      },
+      {
+        "chunk_id": "MSFT_chunk_222",
+        "source": "10-K",
+        "metadata": {
+          "source": "10-K",
+          "order": "222",
+          "filing": "full-submission.txt",
+          "accession": "0001032210-99-001375"
+        }
+      },
+      {
+        "chunk_id": "MSFT_chunk_195",
+        "source": "10-K",
+        "metadata": {
+          "source": "10-K",
+          "order": "195",
+          "filing": "full-submission.txt",
+          "accession": "0001032210-99-001375"
+        }
+      },
+      {
+        "chunk_id": "MSFT_chunk_224",
+        "source": "10-K",
+        "metadata": {
+          "source": "10-K",
+          "order": "224",
+          "filing": "full-submission.txt",
+          "accession": "0001032210-99-001375"
+        }
+      }
+    ]
+  },
+  "deterministic": {
+    "forecast": {
+      "revenue": {
+        "ttm": 281723994112.0,
+        "next_year": 332716037046.27203,
+        "year_two": 392937639751.6473
+      },
+      "eps": {
+        "ttm": 13.64,
+        "next_year": 16.85904,
+        "year_two": 20.83777344
+      }
+    },
+    "valuation": {
+      "dcf_value": 225.69806310678706,
+      "multiples_summary": {
+        "trailing_pe": 38.751465,
+        "forward_pe": 35.355854,
+        "price_to_sales": 13.946092,
+        "ev_to_ebitda": 25.213,
+        "price_to_book": null
+      },
+      "assumptions": {
+        "wacc": 0.09549799002068546,
+        "risk_free_rate": 0.041619997024536136,
+        "equity_risk_premium": 0.055,
+        "beta": 0.9980979146062761,
+        "cost_of_equity": 0.09651538232788132,
+        "cost_of_debt": 0.03936423054070113,
+        "tax_rate": 0.25,
+        "equity_weight": 0.9848132743199786,
+        "debt_weight": 0.01518672568002141,
+        "total_debt": 60588000000.0,
+        "interest_expense": 2385000000.0,
+        "terminal_growth": 0.025,
+        "projection_growth": 0.181,
+        "free_cash_flow": 61070376960.0,
+        "shares_outstanding": 7433166379.0
+      },
+      "scenarios": {
+        "bear": 163.61727398549178,
+        "base": 225.69806310678706,
+        "bull": 326.9408969394503
+      },
+      "scenario_parameters": {
+        "bear": {
+          "growth": 0.151,
+          "growth_delta": -0.03,
+          "wacc": 0.11049799002068546,
+          "wacc_delta": 0.015
+        },
+        "base": {
+          "growth": 0.181,
+          "growth_delta": 0.0,
+          "wacc": 0.09549799002068546,
+          "wacc_delta": 0.0
+        },
+        "bull": {
+          "growth": 0.211,
+          "growth_delta": 0.03,
+          "wacc": 0.08049799002068546,
+          "wacc_delta": -0.015
+        }
+      },
+      "sensitivity": {
+        "wacc_values": [
+          0.08549799002068546,
+          0.09549799002068546,
+          0.10549799002068545
+        ],
+        "terminal_growth_values": [
+          0.015000000000000001,
+          0.025,
+          0.035
+        ],
+        "dcf_matrix": [
+          [
+            233.60373787817073,
+            202.60411831649338,
+            178.5196770732971
+          ],
+          [
+            265.48037213903007,
+            225.69806310678706,
+            195.86771790691782
+          ],
+          [
+            309.9819184994805,
+            256.4266234545224,
+            218.13732907992846
+          ]
+        ]
+      }
+    },
+    "risk": {
+      "liquidity": {
+        "current_ratio": null,
+        "quick_ratio": null,
+        "cash_per_share": null
+      },
+      "leverage": {
+        "debt_to_equity": null,
+        "net_debt": null,
+        "interest_coverage": null
+      },
+      "market": {
+        "beta": 1.023,
+        "dividend_yield": 0.69,
+        "short_ratio": null
+      },
+      "notes": {}
+    },
+    "trends": {
+      "return_1m": 0.06781819661458344,
+      "return_3m": 0.0660846102824626,
+      "return_6m": 0.47401865175688074,
+      "return_1y": 0.27667204873121,
+      "annualized_volatility": 0.22260000300510466,
+      "average_volume_3m": 20318263.492063493
+    },
+    "peer_metrics": [
+      {
+        "ticker": "AAPL",
+        "market_cap": 3809379614720,
+        "enterprise_value": 3855705702400,
+        "revenue_growth": 0.096,
+        "ebitda_margin": 0.34675997,
+        "trailing_pe": 38.892426,
+        "forward_pe": 30.889288,
+        "enterprise_to_ebitda": 27.211,
+        "free_cash_flow": 94873747456
+      },
+      {
+        "ticker": "GOOGL",
+        "market_cap": 3034564526080,
+        "enterprise_value": 2975220367360,
+        "revenue_growth": 0.138,
+        "ebitda_margin": 0.37922,
+        "trailing_pe": 26.669859,
+        "forward_pe": 27.949776,
+        "enterprise_to_ebitda": 21.125,
+        "free_cash_flow": 49786499072
+      },
+      {
+        "ticker": "AMZN",
+        "market_cap": 2355878952960,
+        "enterprise_value": 2422269018112,
+        "revenue_growth": 0.133,
+        "ebitda_margin": 0.19974001,
+        "trailing_pe": 33.67378,
+        "forward_pe": 35.918697,
+        "enterprise_to_ebitda": 18.099,
+        "free_cash_flow": 31024001024
+      },
+      {
+        "ticker": "META",
+        "market_cap": 1797839126528,
+        "enterprise_value": 1800328183808,
+        "revenue_growth": 0.216,
+        "ebitda_margin": 0.52728003,
+        "trailing_pe": 25.976768,
+        "forward_pe": 28.286957,
+        "enterprise_to_ebitda": 19.096,
+        "free_cash_flow": 31991250944
+      },
+      {
+        "ticker": "NVDA",
+        "market_cap": 4517342478336,
+        "enterprise_value": 4462429077504,
+        "revenue_growth": 0.556,
+        "ebitda_margin": 0.59486,
+        "trailing_pe": 52.860397,
+        "forward_pe": 45.03398,
+        "enterprise_to_ebitda": 45.405,
+        "free_cash_flow": 52436750336
+      }
+    ],
+    "history": {
+      "history": [
+        {
+          "period": "2025-06-30",
+          "revenue": 281724000000.0,
+          "gross_profit": 193893000000.0,
+          "operating_income": 128528000000.0,
+          "net_income": 101832000000.0,
+          "diluted_eps": 13.64,
+          "operating_cash_flow": null,
+          "capex": null,
+          "free_cash_flow": null,
+          "total_assets": 619003000000.0,
+          "total_equity": null,
+          "total_debt": 60588000000.0,
+          "current_assets": null,
+          "current_liabilities": null,
+          "working_capital": null
+        },
+        {
+          "period": "2024-06-30",
+          "revenue": 245122000000.0,
+          "gross_profit": 171008000000.0,
+          "operating_income": 109433000000.0,
+          "net_income": 88136000000.0,
+          "diluted_eps": 11.8,
+          "operating_cash_flow": null,
+          "capex": null,
+          "free_cash_flow": null,
+          "total_assets": 512163000000.0,
+          "total_equity": null,
+          "total_debt": 67127000000.0,
+          "current_assets": null,
+          "current_liabilities": null,
+          "working_capital": null
+        },
+        {
+          "period": "2023-06-30",
+          "revenue": 211915000000.0,
+          "gross_profit": 146052000000.0,
+          "operating_income": 88523000000.0,
+          "net_income": 72361000000.0,
+          "diluted_eps": 9.68,
+          "operating_cash_flow": null,
+          "capex": null,
+          "free_cash_flow": null,
+          "total_assets": 411976000000.0,
+          "total_equity": null,
+          "total_debt": 59965000000.0,
+          "current_assets": null,
+          "current_liabilities": null,
+          "working_capital": null
+        },
+        {
+          "period": "2022-06-30",
+          "revenue": 198270000000.0,
+          "gross_profit": 135620000000.0,
+          "operating_income": 83383000000.0,
+          "net_income": 72738000000.0,
+          "diluted_eps": 9.65,
+          "operating_cash_flow": null,
+          "capex": null,
+          "free_cash_flow": null,
+          "total_assets": 364840000000.0,
+          "total_equity": null,
+          "total_debt": 61270000000.0,
+          "current_assets": null,
+          "current_liabilities": null,
+          "working_capital": null
+        }
+      ],
+      "ratios": [
+        {
+          "period": "2025-06-30",
+          "gross_margin": 0.6882374238616519,
+          "operating_margin": 0.4562195624085985,
+          "net_margin": 0.3614601524896707,
+          "revenue_growth": null,
+          "return_on_equity": null,
+          "roic": null
+        },
+        {
+          "period": "2024-06-30",
+          "gross_margin": 0.6976444382797138,
+          "operating_margin": 0.44644299573273716,
+          "net_margin": 0.35955972944084985,
+          "revenue_growth": -0.12992148343769078,
+          "return_on_equity": null,
+          "roic": null
+        },
+        {
+          "period": "2023-06-30",
+          "gross_margin": 0.6892008588349102,
+          "operating_margin": 0.417728806361041,
+          "net_margin": 0.3414623787839464,
+          "revenue_growth": -0.13547131632411616,
+          "return_on_equity": null,
+          "roic": null
+        },
+        {
+          "period": "2022-06-30",
+          "gross_margin": 0.684016744842891,
+          "operating_margin": 0.4205527815604983,
+          "net_margin": 0.3668633681343622,
+          "revenue_growth": -0.06438902390109241,
+          "return_on_equity": null,
+          "roic": null
+        }
+      ]
+    },
+    "fcf_projection": {
+      "assumptions": {
+        "revenue_growth": 0.03,
+        "ebit_margin": 0.4562195624085985,
+        "tax_rate": 0.24,
+        "depreciation_pct": 0.12122857832488534,
+        "capex_pct": 0.03,
+        "working_capital_ratio": 0.02,
+        "base_revenue": 281724000000.0
+      },
+      "schedule": [
+        {
+          "year": 1,
+          "revenue": 290175720000.0,
+          "ebit": 132383840000.0,
+          "nopat": 100611718400.0,
+          "depreciation": 35177590000.0,
+          "capex": 8705271600.0,
+          "change_working_capital": 169034400.0,
+          "free_cash_flow": 126915002400.0
+        },
+        {
+          "year": 2,
+          "revenue": 298880991600.0,
+          "ebit": 136355355200.0,
+          "nopat": 103630069952.0,
+          "depreciation": 36232917700.0,
+          "capex": 8966429748.0,
+          "change_working_capital": 174105432.0,
+          "free_cash_flow": 130722452472.0
+        },
+        {
+          "year": 3,
+          "revenue": 307847421348.0,
+          "ebit": 140446015856.0,
+          "nopat": 106738972050.56,
+          "depreciation": 37319905231.0,
+          "capex": 9235422640.44,
+          "change_working_capital": 179328594.96,
+          "free_cash_flow": 134644126046.15999
+        },
+        {
+          "year": 4,
+          "revenue": 317082843988.44,
+          "ebit": 144659396331.68002,
+          "nopat": 109941141212.07681,
+          "depreciation": 38439502387.93,
+          "capex": 9512485319.6532,
+          "change_working_capital": 184708452.80880004,
+          "free_cash_flow": 138683449827.5448
+        },
+        {
+          "year": 5,
+          "revenue": 326595329308.0932,
+          "ebit": 148999178221.6304,
+          "nopat": 113239375448.4391,
+          "depreciation": 39592687459.5679,
+          "capex": 9797859879.242796,
+          "change_working_capital": 190249706.39306396,
+          "free_cash_flow": 142843953322.37115
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,1251 @@
+<!DOCTYPE html>
+<html lang="en" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>minimal animals | Dashboard</title>
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js" integrity="sha384-IpsGuF7Hw6elkalSyi005ZbPFFntkbDE5jBqFaUG2RMaxSelD+spQdLsiyeq9z8o" crossorigin="anonymous"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        primary: {
+                            DEFAULT: 'hsl(222.2, 47.4%, 11.2%)',
+                            foreground: 'hsl(210, 40%, 98%)'
+                        },
+                        background: 'hsl(0, 0%, 100%)',
+                        foreground: 'hsl(222.2, 84%, 4.9%)',
+                        card: 'hsl(0, 0%, 100%)',
+                        'card-foreground': 'hsl(222.2, 84%, 4.9%)',
+                        muted: 'hsl(210, 40%, 96.1%)',
+                        'muted-foreground': 'hsl(215.4, 16.3%, 46.9%)',
+                        border: 'hsl(214.3, 31.8%, 91.4%)',
+                        success: '#16a34a',
+                        danger: '#dc2626',
+                        warning: '#f59e0b',
+                        dark: {
+                            primary: {
+                                DEFAULT: 'hsl(210, 40%, 98%)',
+                                foreground: 'hsl(222.2, 47.4%, 11.2%)'
+                            },
+                            background: 'hsl(222.2, 84%, 4.9%)',
+                            foreground: 'hsl(210, 40%, 98%)',
+                            card: 'hsl(222.2, 84%, 4.9%)',
+                            'card-foreground': 'hsl(210, 40%, 98%)',
+                            muted: 'hsl(217.2, 32.6%, 17.5%)',
+                            'muted-foreground': 'hsl(215, 20.2%, 65.1%)',
+                            border: 'hsl(217.2, 32.6%, 17.5%)',
+                            success: '#22c55e',
+                            danger: '#ef4444',
+                            warning: '#f59e0b'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: hsl(215.4, 16.3%, 70%); border-radius: 3px; }
+        .dark ::-webkit-scrollbar-thumb { background: hsl(215, 20.2%, 40%); }
+
+        .ticker-container {
+            overflow: hidden;
+            position: relative;
+        }
+
+        .ticker-track {
+            display: flex;
+            gap: 1.25rem;
+            width: max-content;
+            animation: ticker-scroll 35s linear infinite;
+        }
+
+        .ticker-track:hover {
+            animation-play-state: paused;
+        }
+
+        @keyframes ticker-scroll {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+        /* The animation translates half the duplicated track so ensure content is repeated twice */
+    </style>
+</head>
+<body class="bg-background dark:bg-dark-background text-foreground dark:text-dark-foreground font-sans antialiased">
+    <div class="flex h-screen w-full">
+        <aside class="w-64 flex-shrink-0 border-r border-border dark:border-dark-border bg-card dark:bg-dark-card flex flex-col">
+            <div class="p-6 h-16 flex items-center">
+                <a href="#" class="flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-foreground dark:text-dark-foreground"><line x1="12" x2="12" y1="20" y2="10"></line><line x1="18" x2="18" y1="20" y2="4"></line><line x1="6" x2="6" y1="20" y2="16"></line></svg>
+                    <div class="text-lg font-bold leading-tight">
+                        <div>minimal</div>
+                        <div>animals</div>
+                    </div>
+                </a>
+            </div>
+            <nav class="flex-grow px-4">
+                <ul class="space-y-1">
+                    <li>
+                        <a href="#" class="flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium bg-muted dark:bg-dark-muted text-foreground dark:text-dark-foreground">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5"><rect width="7" height="9" x="3" y="3" rx="1"></rect><rect width="7" height="5" x="14" y="3" rx="1"></rect><rect width="7" height="9" x="14" y="12" rx="1"></rect><rect width="7" height="5" x="3" y="16" rx="1"></rect></svg>
+                            Dashboard
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" onclick="showToast('Markets feature is not implemented yet.', 'info')" class="flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium text-muted-foreground dark:text-dark-muted-foreground hover:bg-muted dark:hover:bg-dark-muted hover:text-foreground dark:hover:text-dark-foreground transition-colors">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5"><line x1="12" x2="12" y1="20" y2="10"></line><line x1="18" x2="18" y1="20" y2="4"></line><line x1="6" x2="6" y1="20" y2="16"></line></svg>
+                            Markets
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" onclick="showToast('News feature is not implemented yet.', 'info')" class="flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium text-muted-foreground dark:text-dark-muted-foreground hover:bg-muted dark:hover:bg-dark-muted hover:text-foreground dark:hover:text-dark-foreground transition-colors">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h0"></path><path d="M16 16h2"></path><path d="M12 16h2"></path><path d="M12 12h2"></path></svg>
+                            News
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" onclick="showToast('Watchlist feature is not implemented yet.', 'info')" class="flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium text-muted-foreground dark:text-dark-muted-foreground hover:bg-muted dark:hover:bg-dark-muted hover:text-foreground dark:hover:text-dark-foreground transition-colors">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"></path></svg>
+                            Watchlist
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" onclick="showToast('Settings feature is not implemented yet.', 'info')" class="flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium text-muted-foreground dark:text-dark-muted-foreground hover:bg-muted dark:hover:bg-dark-muted hover:text-foreground dark:hover:text-dark-foreground transition-colors">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 0 2l-.15.08a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.38a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1 0-2l.15-.08a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                            Settings
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+            <div class="p-4 border-t border-border dark:border-dark-border">
+                <div class="flex items-center gap-3">
+                    <img src="https://placehold.co/40x40/E2E8F0/4A5568?text=JD" alt="User avatar" class="h-10 w-10 rounded-full object-cover">
+                    <div>
+                        <p class="text-sm font-semibold">John Doe</p>
+                        <p class="text-xs text-muted-foreground dark:text-dark-muted-foreground">john.doe@email.com</p>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <main class="flex-1 overflow-y-auto">
+            <header class="sticky top-0 z-10 h-16 bg-background/80 dark:bg-dark-background/80 backdrop-blur-sm border-b border-border dark:border-dark-border flex items-center px-8">
+                <div class="flex items-center justify-between w-full">
+                    <div>
+                        <h2 class="text-2xl font-bold">Dashboard</h2>
+                    </div>
+                    <div class="flex items-center gap-4">
+                        <button class="p-2 rounded-full hover:bg-muted dark:hover:bg-dark-muted text-muted-foreground dark:text-dark-muted-foreground hover:text-foreground dark:hover:text-dark-foreground transition-colors">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"></path><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"></path></svg>
+                        </button>
+                        <button id="theme-toggle" class="p-2 rounded-full hover:bg-muted dark:hover:bg-dark-muted text-muted-foreground dark:text-dark-muted-foreground hover:text-foreground dark:hover:text-dark-foreground transition-colors">
+                            <svg id="theme-icon-light" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5 hidden"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+                            <svg id="theme-icon-dark" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5 hidden"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+                        </button>
+                    </div>
+                </div>
+            </header>
+
+            <div class="p-8 space-y-10">
+                <div id="recent-searches-section" class="hidden">
+                    <h3 class="text-lg font-semibold mb-4">Recent Searches</h3>
+                    <div id="recent-searches-buttons" class="flex flex-wrap gap-2">
+                        <!-- Recent searches buttons will be populated here -->
+                    </div>
+                </div>
+                <div class="relative">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground dark:text-dark-muted-foreground"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.3-4.3"></path></svg>
+                    <input id="tickerInput" type="text" placeholder="Search for a stock (e.g., AAPL, GOOGL)" class="w-full pl-10 pr-10 py-2 text-sm border border-border dark:border-dark-border rounded-md bg-card dark:bg-dark-card focus:ring-2 focus:ring-offset-2 focus:ring-primary dark:focus:ring-offset-dark-background focus:outline-none uppercase">
+                    <button id="clearSearch" class="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground dark:text-dark-muted-foreground hidden" onclick="clearSearch()"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
+                    <div id="searchResults" class="absolute z-20 mt-2 w-full rounded-md border border-border dark:border-dark-border bg-card dark:bg-dark-card shadow-lg hidden">
+                        <ul class="max-h-56 overflow-y-auto text-sm"></ul>
+                    </div>
+                </div>
+
+                <div id="report-section" class="bg-card dark:bg-dark-card p-6 rounded-lg border border-border dark:border-dark-border flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6 transition-all duration-300">
+                    <div class="flex items-start gap-4">
+                        <div class="bg-muted dark:bg-dark-muted p-3 rounded-full">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-6 w-6 text-foreground dark:text-dark-foreground"><path d="M3 3v18h18"></path><path d="m19 9-5 5-4-4-3 3"></path></svg>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-semibold">Generate Market Report</h3>
+                            <p class="text-sm text-muted-foreground dark:text-dark-muted-foreground">Get a comprehensive analysis of the current market trends.</p>
+                            <div id="quick-generate-buttons" class="mt-4 flex flex-wrap gap-2">
+                                <!-- Quick generate buttons will be populated here -->
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex w-full sm:w-auto items-center gap-4">
+                        <button id="report-abort" class="px-4 h-9 text-sm font-semibold text-muted-foreground dark:text-dark-muted-foreground bg-muted dark:bg-dark-muted hover:bg-border dark:hover:bg-dark-border rounded-md transition-colors" onclick="abortReport()">Abort</button>
+                        <button id="report-generate" class="px-4 h-9 text-sm font-semibold text-primary-foreground dark:text-dark-primary-foreground bg-primary dark:bg-dark-primary hover:bg-primary/90 dark:hover:bg-dark-primary/80 rounded-md transition-colors flex items-center gap-2" onclick="generateReport()">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                            Generate Report
+                        </button>
+                    </div>
+                </div>
+
+                <div class="relative rounded-lg border border-border dark:border-dark-border bg-card dark:bg-dark-card p-4 ticker-container">
+                    <div class="pointer-events-none absolute inset-y-0 left-0 w-16 bg-gradient-to-r from-card dark:from-dark-card to-transparent"></div>
+                    <div class="pointer-events-none absolute inset-y-0 right-0 w-16 bg-gradient-to-l from-card dark:from-dark-card to-transparent"></div>
+                    <div id="tickerMarquee" class="relative">
+                        <div class="text-sm text-muted-foreground dark:text-dark-muted-foreground">Ticker recommendations will appear here after reports complete.</div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+                    <div class="rounded-lg border border-border dark:border-dark-border bg-card dark:bg-dark-card p-5">
+                        <p class="text-xs uppercase tracking-wide text-muted-foreground dark:text-dark-muted-foreground">Active Reports</p>
+                        <p id="activeReports" class="mt-2 text-3xl font-bold">Loading...</p>
+                    </div>
+                    <div class="rounded-lg border border-border dark:border-dark-border bg-card dark:bg-dark-card p-5">
+                        <p class="text-xs uppercase tracking-wide text-muted-foreground dark:text-dark-muted-foreground">Queue Size</p>
+                        <p id="queueSize" class="mt-2 text-3xl font-bold">Loading...</p>
+                    </div>
+                    <div class="rounded-lg border border-border dark:border-dark-border bg-card dark:bg-dark-card p-5">
+                        <p class="text-xs uppercase tracking-wide text-muted-foreground dark:text-dark-muted-foreground">Completed Today</p>
+                        <p id="completedToday" class="mt-2 text-3xl font-bold">Loading...</p>
+                    </div>
+                    <div class="rounded-lg border border-border dark:border-dark-border bg-card dark:bg-dark-card p-5">
+                        <p class="text-xs uppercase tracking-wide text-muted-foreground dark:text-dark-muted-foreground">Last Refresh</p>
+                        <p id="lastRefresh" class="mt-2 text-lg font-semibold text-muted-foreground dark:text-dark-muted-foreground">—</p>
+                    </div>
+                </div>
+
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Report Highlights</h3>
+                    <div id="reportCardsContainer" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-5 gap-6">
+                        <div class="rounded-lg border border-dashed border-border dark:border-dark-border p-6 text-sm text-muted-foreground dark:text-dark-muted-foreground">
+                            Report highlights will appear here once you generate or complete a report.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+                    <div class="bg-card dark:bg-dark-card border border-border dark:border-dark-border rounded-lg p-6">
+                        <div class="flex items-center justify-between">
+                            <h3 class="text-lg font-semibold">Watchlist</h3>
+                            <button class="text-xs font-medium text-muted-foreground dark:text-dark-muted-foreground hover:text-foreground dark:hover:text-dark-foreground" onclick="renderWatchlist()">Refresh</button>
+                        </div>
+                        <div id="watchlist" class="mt-6 space-y-4 text-sm text-muted-foreground dark:text-dark-muted-foreground">
+                            <p>Loading...</p>
+                        </div>
+                    </div>
+                    <div class="bg-card dark:bg-dark-card border border-border dark:border-dark-border rounded-lg p-6">
+                        <div class="flex items-center justify-between">
+                            <h3 class="text-lg font-semibold">Active Reports</h3>
+                            <button class="text-xs font-medium text-muted-foreground dark:text-dark-muted-foreground hover:text-foreground dark:hover:text-dark-foreground" onclick="requestStatusUpdate()">Refresh</button>
+                        </div>
+                        <div id="activeReportsList" class="mt-6 space-y-4 text-sm text-muted-foreground dark:text-dark-muted-foreground">
+                            <p>Loading...</p>
+                        </div>
+                    </div>
+                    <div class="bg-card dark:bg-dark-card border border-border dark:border-dark-border rounded-lg p-6">
+                        <div class="flex items-center justify-between">
+                            <h3 class="text-lg font-semibold">Recent Reports</h3>
+                            <button class="text-xs font-medium text-muted-foreground dark:text-dark-muted-foreground hover:text-foreground dark:hover:text-dark-foreground" onclick="requestStatusUpdate()">Refresh</button>
+                        </div>
+                        <div id="recentReportsList" class="mt-6 space-y-4 text-sm text-muted-foreground dark:text-dark-muted-foreground">
+                            <p>Loading...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <div id="reportModal" class="fixed inset-0 z-40 hidden items-center justify-center bg-black/40 p-4">
+        <div class="max-w-2xl w-full rounded-lg bg-card dark:bg-dark-card border border-border dark:border-dark-border shadow-xl">
+            <div class="flex items-center justify-between border-b border-border dark:border-dark-border px-6 py-4">
+                <h2 id="modalTitle" class="text-lg font-semibold">Report Details</h2>
+                <button class="text-muted-foreground dark:text-dark-muted-foreground hover:text-foreground dark:hover:text-dark-foreground" onclick="closeModal()">&times;</button>
+            </div>
+            <div id="modalContent" class="px-6 py-4 space-y-3 text-sm text-muted-foreground dark:text-dark-muted-foreground">
+                Loading...
+            </div>
+            <div class="flex justify-end border-t border-border dark:border-dark-border px-6 py-3">
+                <button class="px-4 py-2 text-sm font-semibold text-primary dark:text-dark-primary hover:underline" onclick="closeModal()">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="quickViewModal" class="fixed inset-0 z-40 hidden items-center justify-center bg-black/40 p-4">
+        <div class="max-w-2xl w-full rounded-lg bg-card dark:bg-dark-card border border-border dark:border-dark-border shadow-xl">
+            <div class="flex items-center justify-between border-b border-border dark:border-dark-border px-6 py-4">
+                <h2 id="quickViewModalTitle" class="text-lg font-semibold">Report Details</h2>
+                <button class="text-muted-foreground dark:text-dark-muted-foreground hover:text-foreground dark:hover:text-dark-foreground" onclick="closeQuickViewModal()">&times;</button>
+            </div>
+            <div id="quickViewModalContent" class="px-6 py-4 space-y-3 text-sm text-muted-foreground dark:text-dark-muted-foreground">
+                Loading...
+            </div>
+            <div class="flex justify-end border-t border-border dark:border-dark-border px-6 py-3">
+                <button class="px-4 py-2 text-sm font-semibold text-primary dark:text-dark-primary hover:underline" onclick="closeQuickViewModal()">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast" class="fixed bottom-4 right-4 z-50 hidden rounded-md bg-success text-white px-4 py-3 text-sm font-semibold shadow-lg"></div>
+
+    <script>
+        let socket = null;
+        let activeReports = {};
+        let recentReports = [];
+        let abortInProgress = false;
+        let searchTimeout = null;
+        let selectedSuggestionIndex = -1;
+        const DEFAULT_TICKERS = ['AAPL', 'MSFT', 'GOOGL', 'TSLA', 'AMZN'];
+
+        const themeToggle = document.getElementById('theme-toggle');
+        const lightIcon = document.getElementById('theme-icon-light');
+        const darkIcon = document.getElementById('theme-icon-dark');
+        const htmlEl = document.documentElement;
+
+        function applyTheme(theme) {
+            if (theme === 'dark') {
+                htmlEl.classList.add('dark');
+                lightIcon.classList.remove('hidden');
+                darkIcon.classList.add('hidden');
+            } else {
+                htmlEl.classList.remove('dark');
+                lightIcon.classList.add('hidden');
+                darkIcon.classList.remove('hidden');
+            }
+        }
+
+        const currentTheme = localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+        applyTheme(currentTheme);
+
+        themeToggle.addEventListener('click', () => {
+            const newTheme = htmlEl.classList.contains('dark') ? 'light' : 'dark';
+            localStorage.setItem('theme', newTheme);
+            applyTheme(newTheme);
+        });
+
+        function hideSearchResults() {
+            const container = document.getElementById('searchResults');
+            if (!container) return;
+            container.classList.add('hidden');
+            selectedSuggestionIndex = -1;
+        }
+
+        let recentSearches = [];
+
+        function getRecentSearches() {
+            const searches = localStorage.getItem('recentSearches');
+            return searches ? JSON.parse(searches) : [];
+        }
+
+        function saveRecentSearches() {
+            localStorage.setItem('recentSearches', JSON.stringify(recentSearches));
+        }
+
+        function addRecentSearch(ticker) {
+            if (!ticker) return;
+            recentSearches = recentSearches.filter(t => t !== ticker);
+            recentSearches.unshift(ticker);
+            if (recentSearches.length > 5) {
+                recentSearches.pop();
+            }
+            saveRecentSearches();
+            renderRecentSearches();
+        }
+
+        function renderRecentSearches() {
+            const container = document.getElementById('recent-searches-buttons');
+            const section = document.getElementById('recent-searches-section');
+            if (!container || !section) return;
+
+            recentSearches = getRecentSearches();
+
+            if (recentSearches.length > 0) {
+                section.classList.remove('hidden');
+                container.innerHTML = recentSearches.map(ticker => `
+                    <button class="px-3 py-1.5 text-xs font-medium rounded-full bg-muted dark:bg-dark-muted text-muted-foreground dark:text-dark-muted-foreground hover:bg-border dark:hover:bg-dark-border transition" onclick="quickGenerate('${ticker}')">${ticker}</button>
+                `).join('');
+            } else {
+                section.classList.add('hidden');
+            }
+        }
+
+        function selectSearchResult(ticker) {
+            const input = document.getElementById('tickerInput');
+            if (input) {
+                input.value = ticker;
+                input.focus();
+            }
+            hideSearchResults();
+        }
+
+        function renderSearchResults(matches, query) {
+            const container = document.getElementById('searchResults');
+            if (!container) return;
+            const list = container.querySelector('ul');
+            if (!list) return;
+
+            if (matches.length === 0) {
+                list.innerHTML = '<li class="px-3 py-2 text-muted-foreground dark:text-dark-muted-foreground">No results found</li>';
+            } else {
+                const queryRegex = new RegExp(`(${query})`, 'gi');
+                list.innerHTML = matches.map((item, index) => {
+                    const priceChange = item.price_change > 0 ? `+${item.price_change.toFixed(2)}` : item.price_change.toFixed(2);
+                    const percentChange = item.percent_change > 0 ? `+${item.percent_change.toFixed(2)}` : item.percent_change.toFixed(2);
+                    const priceChangeColor = item.price_change >= 0 ? 'text-success' : 'text-danger';
+
+return `
+                        <li data-item='${JSON.stringify(item)}' class="flex items-center gap-2 border-b border-border dark:border-dark-border last:border-b-0 ${index === selectedSuggestionIndex ? 'bg-muted dark:bg-dark-muted' : ''}">
+                            <button type="button" class="flex-1 px-3 py-2 text-left hover:bg-muted dark:hover:bg-dark-muted" onclick="selectSearchResult('${item.ticker}')">
+                                <div class="flex items-center justify-between">
+                                    <span class="font-semibold">${item.ticker.replace(queryRegex, '<span class="font-bold text-primary dark:text-dark-primary">$1</span>')}</span>
+                                    <span class="text-xs text-muted-foreground dark:text-dark-muted-foreground">${item.name.replace(queryRegex, '<span class="font-bold">$1</span>')}</span>
+                                </div>
+                                <div class="text-xs ${priceChangeColor}">${item.price ? `${item.price.toFixed(2)} (${priceChange} ${percentChange}%)` : ''}</div>
+                            </button>
+                            <button class="text-xs font-semibold text-primary dark:text-dark-primary hover:underline mr-2" onclick="showQuickView('${item.ticker}')">Quick View</button>
+                            <button class="text-xs font-semibold text-primary dark:text-dark-primary hover:underline mr-2" onclick="addToWatchlist('${item.ticker}')">Add to Watchlist</button>
+                        </li>
+                    `;
+                }).join('');
+            }
+
+            container.classList.remove('hidden');
+        }
+
+        function updateSearchResults(query) {
+            const container = document.getElementById('searchResults');
+            if (!container) return;
+            const list = container.querySelector('ul');
+            if (!list) return;
+
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                const term = (query || '').trim().toUpperCase();
+                if (term.length < 2) {
+                    hideSearchResults();
+                    return;
+                }
+
+                list.innerHTML = '<li class="px-3 py-2 text-muted-foreground dark:text-dark-muted-foreground">Loading...</li>';
+                container.classList.remove('hidden');
+
+                fetch(`/api/search_tickers?q=${term}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        renderSearchResults(data, term);
+                    })
+                    .catch(error => {
+                        console.error('Error fetching search results:', error);
+                        hideSearchResults();
+                    });
+            }, 300);
+        }
+
+        function getProgressBar(progress) {
+            return `
+                <div class="mt-4">
+                    <div class="h-2 w-full rounded-full bg-muted dark:bg-dark-muted overflow-hidden">
+                        <div class="h-2 rounded-full bg-gradient-to-r from-blue-500 to-indigo-600" style="width: ${progress}%"></div>
+                    </div>
+                    <div class="mt-2 flex justify-between text-xs text-muted-foreground dark:text-dark-muted-foreground">
+                        <span>${progress}%</span>
+                        <span>In progress</span>
+                    </div>
+                </div>
+            `;
+        }
+
+        function updateActiveReportsList() {
+            const container = document.getElementById('activeReportsList');
+            if (!container) return;
+
+            const reportEntries = Object.entries(activeReports);
+            if (reportEntries.length === 0) {
+                container.innerHTML = '<p>No active reports</p>';
+                return;
+            }
+
+            container.innerHTML = reportEntries.map(([reportId, report]) => {
+                return `
+                    <div class="rounded-lg border border-border dark:border-dark-border bg-card dark:bg-dark-card p-4 shadow-sm">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-xs uppercase tracking-wide text-muted-foreground dark:text-dark-muted-foreground">Active</p>
+                                <p class="text-lg font-semibold text-foreground dark:text-dark-foreground">${report.ticker}</p>
+                            </div>
+                            <button class="text-xs font-semibold text-primary dark:text-dark-primary hover:underline" onclick="showReportDetails('${reportId}')">Details</button>
+                        </div>
+                        <p class="mt-3 text-sm text-muted-foreground dark:text-dark-muted-foreground">${report.current_section}</p>
+                        ${getProgressBar(report.progress)}
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function updateRecentReportsList() {
+            const container = document.getElementById('recentReportsList');
+            if (!container) return;
+
+            if (recentReports.length === 0) {
+                container.innerHTML = '<p>No recent reports</p>';
+                return;
+            }
+
+            container.innerHTML = recentReports.slice(0, 8).map(report => {
+                const rawStatus = (report.status || '').toLowerCase();
+                const statusLabel = rawStatus ? rawStatus.charAt(0).toUpperCase() + rawStatus.slice(1) : '';
+                const statusClasses = rawStatus === 'completed'
+                    ? 'bg-success/10 text-success'
+                    : (rawStatus === 'failed' || rawStatus === 'aborted')
+                        ? 'bg-danger/10 text-danger'
+                        : 'bg-warning/10 text-warning';
+                const completionTime = new Date(report.completion_time || report.start_time).toLocaleString();
+                return `
+                    <div class="rounded-lg border border-border dark:border-dark-border bg-card dark:bg-dark-card p-4 shadow-sm">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-xs uppercase tracking-wide text-muted-foreground dark:text-dark-muted-foreground">Recent</p>
+                                <p class="text-lg font-semibold text-foreground dark:text-dark-foreground">${report.ticker}</p>
+                            </div>
+                            <span class="inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold ${statusClasses}">${statusLabel}</span>
+                        </div>
+                        <p class="mt-3 text-sm text-muted-foreground dark:text-dark-muted-foreground">${completionTime}</p>
+                        <div class="mt-3 flex flex-wrap gap-3 text-xs text-muted-foreground dark:text-dark-muted-foreground">
+                            ${report.word_count ? `<span>${report.word_count} words</span>` : ''}
+                            ${report.report_metadata?.estimated_pages ? `<span>${report.report_metadata.estimated_pages} pages</span>` : ''}
+                        </div>
+                        <div class="mt-4 flex items-center gap-3">
+                            ${report.report_path ? `<button class="text-xs font-semibold text-primary dark:text-dark-primary hover:underline" onclick="downloadReport('${report.report_path}')">Download</button>` : ''}
+                            <button class="text-xs font-semibold text-primary dark:text-dark-primary hover:underline" onclick="showReportDetails('${report.report_id || report.ticker}')">Details</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderHighlightCards() {
+            const container = document.getElementById('reportCardsContainer');
+            if (!container) return;
+
+            const highlights = [];
+            for (const [reportId, report] of Object.entries(activeReports)) {
+                highlights.push({
+                    id: reportId,
+                    ticker: report.ticker,
+                    title: report.current_section,
+                    status: report.status,
+                    progress: report.progress,
+                    type: 'active',
+                    updated: report.start_time
+                });
+            }
+
+            recentReports.slice(0, 5).forEach(report => {
+                highlights.push({
+                    id: report.report_id || `${report.ticker}-${report.completion_time}`,
+                    ticker: report.ticker,
+                    title: report.status === 'completed' ? 'Report ready to review' : 'Report status update',
+                    status: report.status,
+                    progress: report.progress || (report.status === 'completed' ? 100 : 0),
+                    type: 'recent',
+                    delta: report.word_count,
+                    updated: report.completion_time || report.start_time
+                });
+            });
+
+            const cards = highlights.slice(0, 5);
+
+            if (cards.length === 0) {
+                container.innerHTML = '<div class="rounded-lg border border-dashed border-border dark:border-dark-border p-6 text-sm text-muted-foreground dark:text-dark-muted-foreground">Report highlights will appear here once you generate or complete a report.</div>';
+                return;
+            }
+
+            function gradientForStatus(status) {
+                switch (status) {
+                    case 'completed':
+                        return 'bg-gradient-to-br from-green-500 to-emerald-600 text-white';
+                    case 'aborted':
+                    case 'failed':
+                        return 'bg-gradient-to-br from-red-500 to-rose-600 text-white';
+                    case 'queued':
+                    case 'fetching_data':
+                    case 'generating_sections':
+                        return 'bg-gradient-to-br from-yellow-400 to-amber-500 text-white';
+                    default:
+                        return 'bg-gradient-to-br from-sky-500 to-indigo-600 text-white';
+                }
+            }
+
+            container.innerHTML = cards.map(card => {
+                const gradient = gradientForStatus(card.status);
+                const progressText = card.type === 'active'
+                    ? `${card.progress || 0}% complete`
+                    : new Date(card.updated).toLocaleTimeString();
+                return `
+                    <div class="rounded-lg shadow-lg p-4 flex flex-col justify-between ${gradient}">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <p class="text-lg font-bold">${card.ticker}</p>
+                                <p class="text-sm opacity-80">${card.title}</p>
+                            </div>
+                            <div class="text-right">
+                                <p class="font-semibold text-sm uppercase tracking-wide">${card.status}</p>
+                                <p class="text-xs font-medium opacity-80">${progressText}</p>
+                            </div>
+                        </div>
+                        <div class="h-16 -mx-4 -mb-4 mt-4">
+                            <svg viewBox="0 0 100 30" class="w-full h-full" preserveAspectRatio="none"><polyline fill="none" stroke="white" stroke-opacity="0.75" stroke-width="1.5" points="0,25 10,20 20,22 30,15 40,18 50,12 60,16 70,10 80,14 90,8 100,12"></polyline></svg>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function extractRecommendation(report) {
+            const direct = (report.report_metadata && report.report_metadata.recommendation) || report.recommendation;
+            if (direct) {
+                return String(direct).toUpperCase();
+            }
+
+            if (report.report_path) {
+                const match = report.report_path.match(/_(BUY|HOLD|SELL)_/i);
+                if (match) {
+                    return match[1].toUpperCase();
+                }
+            }
+            return null;
+        }
+
+        function recommendationClasses(rec) {
+            switch (rec) {
+                case 'BUY':
+                    return 'bg-gradient-to-br from-green-500 to-emerald-600';
+                case 'SELL':
+                    return 'bg-gradient-to-br from-red-500 to-rose-600';
+                case 'HOLD':
+                    return 'bg-gradient-to-br from-yellow-400 to-amber-500';
+                default:
+                    return 'bg-gradient-to-br from-sky-500 to-indigo-600';
+            }
+        }
+
+        function renderTicker() {
+            const container = document.getElementById('tickerMarquee');
+            if (!container) return;
+
+            const tickerMap = new Map();
+
+            recentReports.forEach(report => {
+                const rec = extractRecommendation(report);
+                if (!rec) return;
+                const ticker = (report.ticker || '').toUpperCase();
+                if (!ticker) return;
+                // Keep the most recent recommendation per ticker
+                if (!tickerMap.has(ticker)) {
+                    tickerMap.set(ticker, { ticker, recommendation: rec, updated: report.completion_time || report.start_time });
+                }
+            });
+
+            if (tickerMap.size === 0) {
+                container.innerHTML = '<div class="text-sm text-muted-foreground dark:text-dark-muted-foreground">Ticker recommendations will appear here after reports complete.</div>';
+                return;
+            }
+
+            const items = Array.from(tickerMap.values()).sort((a, b) => new Date(b.updated || 0) - new Date(a.updated || 0));
+            const trackItems = [...items, ...items];
+
+            container.innerHTML = `
+                <div class="ticker-track">
+                    ${trackItems.map(item => {
+                        const badge = recommendationClasses(item.recommendation);
+                        const label = item.recommendation || '—';
+                        return `
+                            <div class="flex items-center gap-3 rounded-lg px-4 py-2 text-white shadow-md ${badge}">
+                                <span class="text-lg font-bold tracking-wide">${item.ticker}</span>
+                                <span class="text-xs font-semibold uppercase tracking-wide">${label}</span>
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+            `;
+        }
+
+        function updateDashboard(data) {
+            if (!data) return;
+
+            document.getElementById('activeReports').textContent = Object.keys(data.active_reports || {}).length;
+            document.getElementById('queueSize').textContent = data.queue_size || 0;
+
+            const today = new Date().toDateString();
+            const completedToday = (data.recent_reports || []).filter(report => new Date(report.start_time).toDateString() === today).length;
+            document.getElementById('completedToday').textContent = completedToday;
+            document.getElementById('lastRefresh').textContent = new Date().toLocaleTimeString();
+
+            activeReports = data.active_reports || {};
+            updateActiveReportsList();
+
+            recentReports = (data.recent_reports || []).map(report => {
+                if (report.report_metadata) {
+                    report.word_count = report.word_count || report.report_metadata.word_count;
+                    report.estimated_pages = report.report_metadata.estimated_pages;
+                }
+                return report;
+            });
+            updateRecentReportsList();
+            renderHighlightCards();
+            renderTicker();
+        }
+
+        function fetchStatusFallback(showError = false) {
+            fetch('/api/status')
+                .then(response => response.json())
+                .then(data => {
+                    updateDashboard(data);
+                })
+                .catch(error => {
+                    if (showError) {
+                        showToast(`Status refresh failed: ${error.message}`, 'error');
+                    }
+                });
+        }
+
+        function initializeSocket() {
+            try {
+                socket = io();
+            } catch (error) {
+                console.error('Socket initialization failed', error);
+                showToast('Unable to connect to live updates', 'error');
+                return;
+            }
+
+            socket.on('connect', () => {
+                socket.emit('request_status');
+            });
+
+            socket.on('disconnect', () => {
+                fetchStatusFallback();
+            });
+
+            socket.on('connect_error', () => {
+                fetchStatusFallback();
+            });
+
+            socket.on('status_update', data => {
+                updateDashboard(data);
+            });
+
+            socket.on('report_update', message => {
+                if (!message || !message.report_id) return;
+                activeReports[message.report_id] = message.data;
+                updateActiveReportsList();
+                renderHighlightCards();
+                renderTicker();
+            });
+
+            socket.on('report_completed', message => {
+                if (!message || !message.report_id) return;
+                delete activeReports[message.report_id];
+                if (message.data) {
+                    recentReports.unshift(message.data);
+                }
+                updateActiveReportsList();
+                updateRecentReportsList();
+                renderHighlightCards();
+                renderTicker();
+                const errorDetail = message.success ? '' : (message.data?.error_message || '').trim();
+                const toastMessage = message.success
+                    ? `Report for ${message.data.ticker} completed successfully!`
+                    : `Report for ${message.data.ticker} failed${errorDetail ? `: ${errorDetail}` : '.'}`;
+                showToast(toastMessage, message.success ? 'success' : 'error');
+            });
+
+            socket.on('error', err => {
+                console.error('Socket error', err);
+                showToast('Server error received', 'error');
+            });
+        }
+
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            if (!toast) return;
+
+            toast.textContent = message;
+            toast.classList.remove('hidden');
+            toast.classList.remove('bg-success', 'bg-danger', 'bg-warning');
+            if (type === 'success') {
+                toast.classList.add('bg-success');
+            } else if (type === 'error') {
+                toast.classList.add('bg-danger');
+            } else {
+                toast.classList.add('bg-warning');
+            }
+
+            setTimeout(() => {
+                toast.classList.add('hidden');
+            }, 3000);
+        }
+
+        function generateReport() {
+            const input = document.getElementById('tickerInput');
+            if (!input) return;
+
+            const ticker = input.value.trim().toUpperCase();
+            if (!ticker) {
+                showToast('Please enter a ticker symbol', 'error');
+                return;
+            }
+
+            addRecentSearch(ticker);
+
+            const button = document.getElementById('report-generate');
+            const previousText = button ? button.textContent : '';
+            if (button) {
+                button.disabled = true;
+                button.textContent = 'Generating...';
+                button.classList.add('opacity-70', 'cursor-not-allowed');
+            }
+
+            fetch('/api/generate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ ticker })
+            })
+            .then(response => response.json().then(payload => ({ ok: response.ok, payload })))
+            .then(({ ok, payload }) => {
+                if (ok && payload.success) {
+                    showToast(`Report for ${ticker} added to queue`, 'success');
+                    input.value = '';
+                    requestStatusUpdate();
+                } else {
+                    showToast(payload.error || 'Failed to add report to queue', 'error');
+                }
+            })
+            .catch(error => {
+                showToast(`Error: ${error.message}`, 'error');
+            })
+            .finally(() => {
+                if (button) {
+                    button.disabled = false;
+                    button.textContent = previousText || 'Generate Report';
+                    button.classList.remove('opacity-70', 'cursor-not-allowed');
+                }
+            });
+        }
+
+        function quickGenerate(ticker) {
+            const input = document.getElementById('tickerInput');
+            if (!input) return;
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            input.focus();
+            input.value = ticker;
+            generateReport();
+        }
+
+        function populateQuickGenerateButtons() {
+            const container = document.getElementById('quick-generate-buttons');
+            if (!container) return;
+
+            container.innerHTML = DEFAULT_TICKERS.map(ticker => `
+                <button class="px-3 py-1.5 text-xs font-medium rounded-full bg-muted dark:bg-dark-muted text-muted-foreground dark:text-dark-muted-foreground hover:bg-border dark:hover:bg-dark-border transition" onclick="quickGenerate('${ticker}')">${ticker}</button>
+            `).join('');
+        }
+
+        function abortReport() {
+            if (abortInProgress) {
+                return;
+            }
+
+            const button = document.getElementById('report-abort');
+            const originalText = button ? button.textContent : '';
+
+            abortInProgress = true;
+            if (button) {
+                button.disabled = true;
+                button.textContent = 'Aborting...';
+                button.classList.add('opacity-60', 'cursor-not-allowed');
+            }
+
+            fetch('/api/abort', { method: 'POST' })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        const summary = data.summary || {};
+                        const active = summary.aborted_active || 0;
+                        const queued = summary.aborted_queued || 0;
+                        showToast(`Abort requested (active: ${active}, queued: ${queued})`, 'success');
+                        requestStatusUpdate();
+                    } else {
+                        showToast(data.error || 'Abort request failed', 'error');
+                    }
+                })
+                .catch(error => {
+                    showToast(`Abort request error: ${error.message}`, 'error');
+                })
+                .finally(() => {
+                    abortInProgress = false;
+                    if (button) {
+                        button.disabled = false;
+                        button.textContent = originalText || 'Abort';
+                        button.classList.remove('opacity-60', 'cursor-not-allowed');
+                    }
+                });
+        }
+
+        function requestStatusUpdate() {
+            if (socket && socket.connected) {
+                socket.emit('request_status');
+            } else {
+                fetchStatusFallback(true);
+            }
+        }
+
+        function showReportDetails(reportId) {
+            const modal = document.getElementById('reportModal');
+            const title = document.getElementById('modalTitle');
+            const content = document.getElementById('modalContent');
+
+            if (!modal || !title || !content) return;
+
+            let report = activeReports[reportId];
+            if (report) {
+                title.textContent = `Active Report: ${report.ticker}`;
+                content.innerHTML = `
+                    <div class="grid gap-2 text-sm">
+                        <div><span class="font-semibold">Status:</span> ${report.status}</div>
+                        <div><span class="font-semibold">Progress:</span> ${report.progress}%</div>
+                        <div><span class="font-semibold">Current Section:</span> ${report.current_section}</div>
+                        <div><span class="font-semibold">Started:</span> ${new Date(report.start_time).toLocaleString()}</div>
+                        ${report.estimated_completion ? `<div><span class="font-semibold">ETA:</span> ${new Date(report.estimated_completion).toLocaleString()}</div>` : ''}
+                        ${report.error_message ? `<div class="text-danger">${report.error_message}</div>` : ''}
+                    </div>
+                `;
+            } else {
+                report = recentReports.find(r => r.report_id === reportId || r.ticker === reportId);
+                if (!report) {
+                    title.textContent = 'Report Not Found';
+                    content.innerHTML = '<p>Report details not available.</p>';
+                }
+                else {
+                    const meta = report.report_metadata || {};
+                    const sections = meta.sections || [];
+                    const guardrails = meta.guardrail_notes || [];
+                    const sources = meta.retrieval_sources || {};
+                    title.textContent = `Report: ${report.ticker}`;
+                    content.innerHTML = `
+                        <div class="grid gap-2 text-sm">
+                            <div><span class="font-semibold">Status:</span> ${report.status}</div>
+                            <div><span class="font-semibold">Started:</span> ${new Date(report.start_time).toLocaleString()}</div>
+                            <div><span class="font-semibold">Completed:</span> ${new Date(report.completion_time || report.start_time).toLocaleString()}</div>
+                            ${report.word_count ? `<div><span class="font-semibold">Word Count:</span> ${report.word_count}</div>` : ''}
+                            ${meta.estimated_pages ? `<div><span class="font-semibold">Estimated Pages:</span> ${meta.estimated_pages}</div>` : ''}
+                            ${report.report_path ? `<div><span class="font-semibold">File:</span> ${report.report_path}</div>` : ''}
+                        </div>
+                        ${sections.length ? `
+                            <div class="mt-4">
+                                <h4 class="text-sm font-semibold mb-2">Sections</h4>
+                                <div class="max-h-48 overflow-y-auto border border-border dark:border-dark-border rounded-md">
+                                    <table class="min-w-full text-xs">
+                                        <thead class="bg-muted dark:bg-dark-muted text-muted-foreground dark:text-dark-muted-foreground">
+                                            <tr>
+                                                <th class="px-3 py-2 text-left">#</th>
+                                                <th class="px-3 py-2 text-left">Section</th>
+                                                <th class="px-3 py-2 text-left">Words</th>
+                                                <th class="px-3 py-2 text-left">Target</th>
+                                                <th class="px-3 py-2 text-left">Citations</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="divide-y divide-border dark:divide-dark-border">
+                                            ${sections.map(section => `
+                                                <tr>
+                                                    <td class="px-3 py-2">${section.index ?? section.key ?? ''}</td>
+                                                    <td class="px-3 py-2">${section.title || section.key || ''}</td>
+                                                    <td class="px-3 py-2">${section.word_count || '—'}</td>
+                                                    <td class="px-3 py-2">${section.min_word_count || '—'}</td>
+                                                    <td class="px-3 py-2">${section.has_citations ? '✅' : '⚠️'}</td>
+                                                </tr>
+                                            `).join('')}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        ` : ''}
+                        ${guardrails.length ? `
+                            <div class="mt-4">
+                                <h4 class="text-sm font-semibold mb-2 text-danger">Guardrail Alerts</h4>
+                                <ul class="list-disc pl-5 space-y-1 text-sm">${guardrails.map(note => `<li>${note}</li>`).join('')}</ul>
+                            </div>
+                        ` : ''}
+                        ${Object.keys(sources).length ? `
+                            <div class="mt-4 space-y-2">
+                                <h4 class="text-sm font-semibold">Primary Sources</h4>
+                                <div class="max-h-40 overflow-y-auto space-y-2 text-sm">
+                                    ${Object.entries(sources).map(([sectionKey, items]) => `
+                                        <div>
+                                            <p class="font-semibold">${sectionKey}</p>
+                                            <ul class="list-disc pl-5">
+                                                ${(items || []).map(item => `<li>${item.source || 'Source'} ${item.chunk_id ? `- ${item.chunk_id}` : ''}</li>`).join('')}
+                                            </ul>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        ` : ''}
+                    `;
+                }
+            }
+
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        let watchlist = [];
+
+        function getWatchlist() {
+            const list = localStorage.getItem('watchlist');
+            return list ? JSON.parse(list) : [];
+        }
+
+        function saveWatchlist() {
+            localStorage.setItem('watchlist', JSON.stringify(watchlist));
+        }
+
+        function addToWatchlist(ticker) {
+            if (!ticker) return;
+            watchlist = getWatchlist();
+            if (!watchlist.includes(ticker)) {
+                watchlist.push(ticker);
+                saveWatchlist();
+                renderWatchlist();
+                showToast(`${ticker} added to watchlist`, 'success');
+            } else {
+                showToast(`${ticker} is already in the watchlist`, 'info');
+            }
+        }
+
+        function removeFromWatchlist(ticker) {
+            if (!ticker) return;
+            watchlist = getWatchlist();
+            watchlist = watchlist.filter(t => t !== ticker);
+            saveWatchlist();
+            renderWatchlist();
+            showToast(`${ticker} removed from watchlist`, 'success');
+        }
+
+        function renderWatchlist() {
+            const container = document.getElementById('watchlist');
+            if (!container) return;
+
+            watchlist = getWatchlist();
+
+            if (watchlist.length > 0) {
+                container.innerHTML = watchlist.map(ticker => `
+                    <div class="flex items-center justify-between" id="watchlist-item-${ticker}">
+                        <span class="font-semibold">${ticker}</span>
+                        <div>
+                            <span class="text-sm font-semibold mr-2"></span>
+                            <button class="text-xs font-semibold text-primary dark:text-dark-primary hover:underline mr-2" onclick="quickGenerate('${ticker}')">Generate</button>
+                            <button class="text-xs font-semibold text-danger hover:underline" onclick="removeFromWatchlist('${ticker}')">Remove</button>
+                        </div>
+                    </div>
+                `).join('');
+                updateWatchlistPrices();
+            } else {
+                container.innerHTML = '<p>Your watchlist is empty.</p>';
+            }
+        }
+
+        function updateWatchlistPrices() {
+            watchlist = getWatchlist();
+            if (watchlist.length === 0) return;
+
+            fetch('/api/watchlist_prices', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ tickers: watchlist })
+            })
+            .then(response => response.json())
+            .then(data => {
+                for (const ticker in data) {
+                    const item = data[ticker];
+                    const container = document.getElementById(`watchlist-item-${ticker}`);
+                    if (container) {
+                        const priceEl = container.querySelector('span:first-child');
+                        const priceChangeEl = container.querySelector('span:nth-child(2)');
+                        if(priceEl && priceChangeEl) {
+                            const priceChange = item.price_change > 0 ? `+${item.price_change.toFixed(2)}` : item.price_change.toFixed(2);
+                            const percentChange = item.percent_change > 0 ? `+${item.percent_change.toFixed(2)}` : item.percent_change.toFixed(2);
+                            const priceChangeColor = item.price_change >= 0 ? 'text-success' : 'text-danger';
+
+                            priceEl.textContent = `${ticker}`;
+                            priceChangeEl.innerHTML = `<span class="${priceChangeColor}">${item.price ? `${item.price.toFixed(2)} (${priceChange} ${percentChange}%)` : ''}</span>`;
+                        }
+                    }
+                }
+            });
+        }
+
+        function showQuickView(ticker) {
+            const modal = document.getElementById('quickViewModal');
+            const title = document.getElementById('quickViewModalTitle');
+            const content = document.getElementById('quickViewModalContent');
+
+            if (!modal || !title || !content) return;
+
+            title.textContent = `Quick View: ${ticker}`;
+            content.innerHTML = 'Loading...';
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+
+            fetch(`/api/search_tickers?q=${ticker}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data && data.length > 0) {
+                        const item = data[0];
+                        const priceChange = item.price_change > 0 ? `+${item.price_change.toFixed(2)}` : item.price_change.toFixed(2);
+                        const percentChange = item.percent_change > 0 ? `+${item.percent_change.toFixed(2)}` : item.percent_change.toFixed(2);
+                        const priceChangeColor = item.price_change >= 0 ? 'text-success' : 'text-danger';
+
+                        content.innerHTML = `
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <div class="font-semibold">${item.name} (${item.ticker})</div>
+                                    <div class="text-2xl font-bold">${item.price ? `${item.price.toFixed(2)}` : 'N/A'}</div>
+                                    <div class="${priceChangeColor}">${priceChange} (${percentChange}%)</div>
+                                </div>
+                                <div>
+                                    <div class="font-semibold">Market Cap</div>
+                                    <div>${item.market_cap ? `${(item.market_cap / 1e9).toFixed(2)}B` : 'N/A'}</div>
+                                    <div class="font-semibold mt-2">Sector</div>
+                                    <div>${item.sector || 'N/A'}</div>
+                                </div>
+                            </div>
+                        `;
+                    } else {
+                        content.innerHTML = 'Could not retrieve stock information.';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching quick view data:', error);
+                    content.innerHTML = 'Could not retrieve stock information.';
+                });
+        }
+
+        function closeQuickViewModal() {
+            const modal = document.getElementById('quickViewModal');
+            if (modal) {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+            }
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('reportModal');
+            if (modal) {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+            }
+        }
+
+        function downloadReport(filename) {
+            if (!filename) return;
+            window.open(`/reports/${filename}`, '_blank');
+        }
+
+        const tickerInputEl = document.getElementById('tickerInput');
+        const clearSearchBtn = document.getElementById('clearSearch');
+
+        function clearSearch() {
+            tickerInputEl.value = '';
+            hideSearchResults();
+            clearSearchBtn.classList.add('hidden');
+        }
+
+        if (tickerInputEl) {
+            tickerInputEl.addEventListener('input', event => {
+                updateSearchResults(event.target.value);
+                if (event.target.value.length > 0) {
+                    clearSearchBtn.classList.remove('hidden');
+                } else {
+                    clearSearchBtn.classList.add('hidden');
+                }
+            });
+            tickerInputEl.addEventListener('focus', event => {
+                updateSearchResults(event.target.value);
+            });
+            tickerInputEl.addEventListener('keydown', event => {
+                const suggestions = document.querySelectorAll('#searchResults li');
+                if (suggestions.length === 0) return;
+
+                if (event.key === 'ArrowDown') {
+                    event.preventDefault();
+                    selectedSuggestionIndex = (selectedSuggestionIndex + 1) % suggestions.length;
+                    const selected = suggestions[selectedSuggestionIndex];
+                    selected.scrollIntoView({ block: 'nearest' });
+                    // Update the input value with the selected ticker
+                    const item = JSON.parse(selected.dataset.item);
+                    tickerInputEl.value = item.ticker;
+
+                } else if (event.key === 'ArrowUp') {
+                    event.preventDefault();
+                    selectedSuggestionIndex = (selectedSuggestionIndex - 1 + suggestions.length) % suggestions.length;
+                    const selected = suggestions[selectedSuggestionIndex];
+                    selected.scrollIntoView({ block: 'nearest' });
+                    // Update the input value with the selected ticker
+                    const item = JSON.parse(selected.dataset.item);
+                    tickerInputEl.value = item.ticker;
+
+                } else if (event.key === 'Enter') {
+                    event.preventDefault();
+                    if (selectedSuggestionIndex >= 0) {
+                        const selected = suggestions[selectedSuggestionIndex];
+                        const item = JSON.parse(selected.dataset.item);
+                        selectSearchResult(item.ticker);
+                    } else {
+                        generateReport();
+                    }
+                    hideSearchResults();
+                } else if (event.key === 'Escape') {
+                    hideSearchResults();
+                }
+            });
+        }
+
+        window.addEventListener('click', event => {
+            const modal = document.getElementById('reportModal');
+            if (modal && !modal.classList.contains('hidden') && event.target === modal) {
+                closeModal();
+            }
+            const searchContainer = document.getElementById('searchResults');
+            if (searchContainer) {
+                const input = document.getElementById('tickerInput');
+                if (searchContainer.contains(event.target) || input === event.target) {
+                    return;
+                }
+                hideSearchResults();
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', () => {
+            populateQuickGenerateButtons();
+            renderRecentSearches();
+            renderWatchlist();
+            initializeSocket();
+            fetchStatusFallback();
+            setInterval(() => {
+                requestStatusUpdate();
+            }, 30000);
+            setInterval(() => {
+                updateWatchlistPrices();
+            }, 30000);
+        });
+    </script>
+</body>
+</html>

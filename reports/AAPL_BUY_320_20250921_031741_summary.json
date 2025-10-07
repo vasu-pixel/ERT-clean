@@ -1,0 +1,10 @@
+{
+  "ticker": "AAPL",
+  "recommendation": "BUY",
+  "target_price": 320.0,
+  "report_date": "September 21, 2025",
+  "markdown_file": "reports/AAPL_BUY_320_20250921_031741.md",
+  "word_count": 3381,
+  "ai_engine": "mistral:7b",
+  "guardrail_notes": []
+}

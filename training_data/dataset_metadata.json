@@ -1,0 +1,25 @@
+{
+  "dataset_info": {
+    "name": "Equity Research Training Dataset",
+    "version": "1.0",
+    "created": "2025-09-20T19:32:17.789893",
+    "total_examples": 19,
+    "training_examples": 17,
+    "validation_examples": 2
+  },
+  "content_categories": {
+    "executive_summaries": "Investment recommendations and key highlights",
+    "financial_analysis": "Profitability, efficiency, and quality metrics",
+    "valuation_analysis": "DCF models and comparable company analysis",
+    "investment_thesis": "Bull/bear cases and catalysts",
+    "risk_analysis": "Business, regulatory, and financial risks",
+    "industry_analysis": "Sector dynamics and competitive landscape"
+  },
+  "model_recommendations": {
+    "base_model": "llama3.1:8b",
+    "finetuning_method": "LoRA",
+    "recommended_epochs": 3,
+    "learning_rate": 2e-05,
+    "batch_size": 4
+  }
+}

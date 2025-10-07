@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ERT - Equity Research Generator</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #333;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+            width: 90%;
+            max-width: 600px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .logo {
+            margin-bottom: 30px;
+        }
+
+        .logo i {
+            font-size: 3em;
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .logo h1 {
+            color: #2c3e50;
+            font-size: 2.2em;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .logo p {
+            color: #7f8c8d;
+            font-size: 1.1em;
+        }
+
+        .search-container {
+            position: relative;
+            margin: 40px 0;
+        }
+
+        .search-box {
+            width: 100%;
+            padding: 20px 25px;
+            font-size: 1.3em;
+            border: 3px solid #e0e0e0;
+            border-radius: 50px;
+            outline: none;
+            transition: all 0.3s ease;
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-weight: 600;
+        }
+
+        .search-box:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 20px rgba(102, 126, 234, 0.3);
+            transform: scale(1.02);
+        }
+
+        .search-box::placeholder {
+            color: #bdc3c7;
+            text-transform: none;
+            letter-spacing: 1px;
+        }
+
+        .generate-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 18px 40px;
+            font-size: 1.2em;
+            font-weight: 600;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 20px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .generate-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 35px rgba(102, 126, 234, 0.4);
+        }
+
+        .generate-btn:disabled {
+            background: #95a5a6;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .abort-btn {
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+            color: white;
+            border: none;
+            padding: 18px 40px;
+            font-size: 1.2em;
+            font-weight: 600;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+            margin-left: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 8px 25px rgba(231, 76, 60, 0.3);
+        }
+
+        .abort-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 35px rgba(231, 76, 60, 0.4);
+        }
+
+        .status-container {
+            margin-top: 30px;
+            padding: 20px;
+            background: rgba(236, 240, 241, 0.8);
+            border-radius: 15px;
+            min-height: 80px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            transition: all 0.3s ease;
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        .status-container.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .status-message {
+            font-size: 1.1em;
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-weight: 500;
+        }
+
+        .progress-container {
+            margin: 20px 0;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 25px;
+            background: #ecf0f1;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #27ae60, #2ecc71, #f39c12);
+            border-radius: 15px;
+            transition: width 0.5s ease;
+            position: relative;
+            width: 0%;
+        }
+
+        .progress-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, transparent 35%, rgba(255,255,255,0.4) 50%, transparent 65%);
+            animation: shimmer 2s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        .progress-text {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+            font-size: 0.9em;
+            color: #7f8c8d;
+            font-weight: 600;
+        }
+
+        .download-section {
+            margin-top: 25px;
+            padding: 20px;
+            background: linear-gradient(135deg, #27ae60, #2ecc71);
+            border-radius: 15px;
+            display: none;
+        }
+
+        .download-section.visible {
+            display: block;
+            animation: slideIn 0.5s ease;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .download-btn {
+            background: white;
+            color: #27ae60;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.1em;
+            font-weight: 600;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 10px;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .download-btn:hover {
+            background: #ecf0f1;
+            transform: translateY(-2px);
+        }
+
+        .error-message {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+            display: none;
+        }
+
+        .error-message.visible {
+            display: block;
+            animation: slideIn 0.5s ease;
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+            margin-right: 10px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .examples {
+            margin-top: 25px;
+            text-align: left;
+        }
+
+        .examples h3 {
+            color: #34495e;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .example-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        .example-btn {
+            background: rgba(52, 152, 219, 0.1);
+            color: #3498db;
+            border: 2px solid #3498db;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            font-size: 0.9em;
+        }
+
+        .example-btn:hover {
+            background: #3498db;
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .connection-status {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 10px 15px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .connected {
+            background: #27ae60;
+            color: white;
+        }
+
+        .disconnected {
+            background: #e74c3c;
+            color: white;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                margin: 20px;
+                padding: 30px 20px;
+            }
+
+            .search-box {
+                font-size: 1.1em;
+                padding: 18px 20px;
+            }
+
+            .logo h1 {
+                font-size: 1.8em;
+            }
+
+            .example-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+
+        .ai-badge {
+            background: linear-gradient(135deg, #8e44ad, #9b59b6);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: 600;
+            margin-top: 15px;
+            display: inline-block;
+        }
+
+        .features {
+            margin-top: 25px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            text-align: center;
+        }
+
+        .feature {
+            padding: 15px;
+            background: rgba(52, 152, 219, 0.1);
+            border-radius: 10px;
+        }
+
+        .feature i {
+            font-size: 1.5em;
+            color: #3498db;
+            margin-bottom: 8px;
+        }
+
+        .feature-text {
+            font-size: 0.9em;
+            color: #34495e;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <div class="connection-status" id="connectionStatus">
+        <i class="fas fa-wifi"></i> Connecting...
+    </div>
+
+    <div class="container">
+        <div class="logo">
+            <i class="fas fa-chart-line"></i>
+            <h1>Equity Research Generator</h1>
+            <p>AI-Powered Professional Research Reports</p>
+            <div class="ai-badge">
+                <i class="fas fa-robot"></i> Powered by Mistral:7b
+            </div>
+        </div>
+
+        <div class="search-container">
+            <input type="text"
+                   id="tickerInput"
+                   class="search-box"
+                   placeholder="Enter stock ticker (e.g., AAPL, MSFT, GOOGL)"
+                   maxlength="10">
+
+            <button id="generateBtn" class="generate-btn" onclick="generateReport()">
+                <i class="fas fa-magic"></i> Generate Report
+            </button>
+
+            <button id="abortBtn" class="abort-btn" onclick="abortGeneration()" style="display: none;">
+                <i class="fas fa-stop"></i> Abort
+            </button>
+        </div>
+
+        <div class="examples">
+            <h3>Popular Stocks</h3>
+            <div class="example-buttons">
+                <button class="example-btn" onclick="setTicker('AAPL')">AAPL</button>
+                <button class="example-btn" onclick="setTicker('MSFT')">MSFT</button>
+                <button class="example-btn" onclick="setTicker('GOOGL')">GOOGL</button>
+                <button class="example-btn" onclick="setTicker('TSLA')">TSLA</button>
+                <button class="example-btn" onclick="setTicker('AMZN')">AMZN</button>
+                <button class="example-btn" onclick="setTicker('CVS')">CVS</button>
+                <button class="example-btn" onclick="setTicker('JPM')">JPM</button>
+                <button class="example-btn" onclick="setTicker('NVDA')">NVDA</button>
+            </div>
+        </div>
+
+        <div class="features">
+            <div class="feature">
+                <i class="fas fa-file-pdf"></i>
+                <div class="feature-text">PDF Download</div>
+            </div>
+            <div class="feature">
+                <i class="fas fa-chart-bar"></i>
+                <div class="feature-text">Financial Analysis</div>
+            </div>
+            <div class="feature">
+                <i class="fas fa-shield-alt"></i>
+                <div class="feature-text">Risk Assessment</div>
+            </div>
+            <div class="feature">
+                <i class="fas fa-bullseye"></i>
+                <div class="feature-text">Price Targets</div>
+            </div>
+        </div>
+
+        <div id="statusContainer" class="status-container">
+            <div id="statusMessage" class="status-message">
+                Ready to generate professional equity research reports
+            </div>
+
+            <div class="progress-container">
+                <div class="progress-bar">
+                    <div id="progressFill" class="progress-fill"></div>
+                </div>
+                <div class="progress-text">
+                    <span id="progressStatus">Idle</span>
+                    <span id="progressPercent">0%</span>
+                </div>
+            </div>
+        </div>
+
+        <div id="downloadSection" class="download-section">
+            <h3 style="color: white; margin-bottom: 15px;">
+                <i class="fas fa-check-circle"></i> Report Generated Successfully!
+            </h3>
+            <a id="downloadBtn" class="download-btn" href="#" download>
+                <i class="fas fa-download"></i> Download PDF Report
+            </a>
+        </div>
+
+        <div id="errorMessage" class="error-message">
+            <i class="fas fa-exclamation-triangle"></i>
+            <span id="errorText">An error occurred</span>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let socket;
+        let isGenerating = false;
+
+        // Initialize WebSocket connection
+        function initializeSocket() {
+            socket = io();
+
+            socket.on('connect', function() {
+                updateConnectionStatus(true);
+                socket.emit('request_status');
+            });
+
+            socket.on('disconnect', function() {
+                updateConnectionStatus(false);
+            });
+
+            socket.on('status_update', function(data) {
+                updateStatus(data);
+            });
+        }
+
+        // Update connection status
+        function updateConnectionStatus(connected) {
+            const status = document.getElementById('connectionStatus');
+            if (connected) {
+                status.className = 'connection-status connected';
+                status.innerHTML = '<i class="fas fa-wifi"></i> Connected';
+            } else {
+                status.className = 'connection-status disconnected';
+                status.innerHTML = '<i class="fas fa-wifi"></i> Disconnected';
+            }
+        }
+
+        // Update status display
+        function updateStatus(data) {
+            const statusContainer = document.getElementById('statusContainer');
+            const statusMessage = document.getElementById('statusMessage');
+            const progressFill = document.getElementById('progressFill');
+            const progressStatus = document.getElementById('progressStatus');
+            const progressPercent = document.getElementById('progressPercent');
+            const downloadSection = document.getElementById('downloadSection');
+            const errorMessage = document.getElementById('errorMessage');
+            const generateBtn = document.getElementById('generateBtn');
+            const abortBtn = document.getElementById('abortBtn');
+
+            // Show status container
+            statusContainer.classList.add('visible');
+
+            // Update message
+            statusMessage.textContent = data.message || 'Processing...';
+
+            // Update progress
+            const progress = data.progress || 0;
+            progressFill.style.width = progress + '%';
+            progressStatus.textContent = data.status || 'idle';
+            progressPercent.textContent = progress + '%';
+
+            // Handle different states
+            if (data.status === 'starting' || data.status === 'generating') {
+                isGenerating = true;
+                generateBtn.disabled = true;
+                generateBtn.innerHTML = '<div class="loading-spinner"></div> Generating...';
+                abortBtn.style.display = 'inline-block';
+                downloadSection.classList.remove('visible');
+                errorMessage.classList.remove('visible');
+            } else if (data.status === 'completed') {
+                isGenerating = false;
+                generateBtn.disabled = false;
+                generateBtn.innerHTML = '<i class="fas fa-magic"></i> Generate Report';
+                abortBtn.style.display = 'none';
+
+                if (data.pdf_path) {
+                    const downloadBtn = document.getElementById('downloadBtn');
+                    downloadBtn.href = `/api/download/${data.pdf_path}`;
+                    downloadSection.classList.add('visible');
+
+                    // Auto-download after 2 seconds
+                    setTimeout(() => {
+                        downloadBtn.click();
+                    }, 2000);
+                }
+                errorMessage.classList.remove('visible');
+            } else if (data.status === 'error') {
+                isGenerating = false;
+                generateBtn.disabled = false;
+                generateBtn.innerHTML = '<i class="fas fa-magic"></i> Generate Report';
+                abortBtn.style.display = 'none';
+
+                const errorText = document.getElementById('errorText');
+                errorText.textContent = data.error || 'An error occurred';
+                errorMessage.classList.add('visible');
+                downloadSection.classList.remove('visible');
+            } else if (data.status === 'aborted') {
+                isGenerating = false;
+                generateBtn.disabled = false;
+                generateBtn.innerHTML = '<i class="fas fa-magic"></i> Generate Report';
+                abortBtn.style.display = 'none';
+                downloadSection.classList.remove('visible');
+                errorMessage.classList.remove('visible');
+            } else if (data.status === 'idle') {
+                isGenerating = false;
+                generateBtn.disabled = false;
+                generateBtn.innerHTML = '<i class="fas fa-magic"></i> Generate Report';
+                abortBtn.style.display = 'none';
+                downloadSection.classList.remove('visible');
+                errorMessage.classList.remove('visible');
+            }
+        }
+
+        // Generate report function
+        function generateReport() {
+            const ticker = document.getElementById('tickerInput').value.trim().toUpperCase();
+
+            if (!ticker) {
+                alert('Please enter a ticker symbol');
+                return;
+            }
+
+            if (isGenerating) {
+                alert('Report generation already in progress');
+                return;
+            }
+
+            // Clear previous states
+            document.getElementById('downloadSection').classList.remove('visible');
+            document.getElementById('errorMessage').classList.remove('visible');
+
+            // Start generation
+            fetch('/api/generate', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ ticker: ticker })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (!data.success) {
+                    throw new Error(data.error || 'Failed to start generation');
+                }
+            })
+            .catch(error => {
+                alert('Error: ' + error.message);
+                console.error('Error:', error);
+            });
+        }
+
+        function abortGeneration() {
+            if (!isGenerating) {
+                alert('No report generation in progress');
+                return;
+            }
+
+            if (confirm('Are you sure you want to abort the current report generation?')) {
+                fetch('/api/abort', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        console.log('Report generation aborted');
+                    } else {
+                        alert('Error: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    alert('Error aborting generation: ' + error.message);
+                    console.error('Error:', error);
+                });
+            }
+        }
+
+        // Set ticker from example buttons
+        function setTicker(ticker) {
+            document.getElementById('tickerInput').value = ticker;
+            generateReport();
+        }
+
+        // Handle Enter key
+        document.getElementById('tickerInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                generateReport();
+            }
+        });
+
+        // Auto-uppercase ticker input
+        document.getElementById('tickerInput').addEventListener('input', function(e) {
+            e.target.value = e.target.value.toUpperCase();
+        });
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeSocket();
+        });
+    </script>
+</body>
+</html>

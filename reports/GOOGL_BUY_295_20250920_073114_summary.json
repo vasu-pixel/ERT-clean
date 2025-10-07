@@ -1,0 +1,10 @@
+{
+  "ticker": "GOOGL",
+  "recommendation": "BUY",
+  "target_price": 295.0,
+  "report_date": "September 20, 2025",
+  "markdown_file": "reports/GOOGL_BUY_295_20250920_073114.md",
+  "word_count": 3274,
+  "ai_engine": "Ollama Local LLM",
+  "model": "mistral:7b"
+}

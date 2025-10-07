@@ -1,0 +1,36 @@
+{
+  "stage": "completed",
+  "start_time": "2025-09-20T19:32:11.265813",
+  "completed_stages": [
+    "prerequisites_validation",
+    "data_generation",
+    "lora_finetuning"
+  ],
+  "current_stage_start": "2025-09-20T20:04:00.000000",
+  "errors": [],
+  "metrics": {
+    "prerequisites_validation": {
+      "ollama_available": true,
+      "packages_installed": 4,
+      "free_disk_space_gb": 242.45369720458984,
+      "base_model_ready": true
+    },
+    "data_generation": {
+      "training_examples": 16,
+      "validation_examples": 3,
+      "total_examples": 19,
+      "data_files_created": 2
+    },
+    "lora_finetuning": {
+      "model_used": "HuggingFaceTB/SmolLM-1.7B-Instruct",
+      "training_iterations": 100,
+      "final_train_loss": 1.203,
+      "best_val_loss": 0.853,
+      "trainable_parameters": "0.524M (0.031%)",
+      "peak_memory_gb": 4.451,
+      "adapters_created": 5,
+      "training_tokens": 24493,
+      "status": "completed"
+    }
+  }
+}

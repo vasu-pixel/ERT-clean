@@ -1,0 +1,10 @@
+{
+  "ticker": "CVS",
+  "recommendation": "HOLD",
+  "target_price": 78.141,
+  "report_date": "September 19, 2025",
+  "markdown_file": "reports/CVS_HOLD_78_20250919_133002.md",
+  "word_count": 414,
+  "ai_engine": "Ollama Local LLM",
+  "model": "llama3.1:8b"
+}
