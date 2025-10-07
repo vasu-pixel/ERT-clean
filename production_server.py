@@ -67,7 +67,7 @@ def get_stock_info_from_fmp(ticker):
     return None
 
 def get_stock_info(ticker):
-    """Get stock info with caching and fallback to FMP API"""
+    """Get stock info with caching and FMP as primary source"""
     # Check cache first
     cache_key = ticker
     if cache_key in stock_info_cache:
@@ -76,14 +76,19 @@ def get_stock_info(ticker):
             logger.info(f"Returning cached data for {ticker}")
             return cached_data
 
-    if not YFINANCE_AVAILABLE:
-        # Try FMP as fallback
-        result = get_stock_info_from_fmp(ticker)
-        if result:
-            stock_info_cache[cache_key] = (result, time.time())
+    # Try FMP API first (more reliable, no rate limits with API key)
+    logger.info(f"Fetching stock info for {ticker} from FMP API")
+    result = get_stock_info_from_fmp(ticker)
+    if result:
+        stock_info_cache[cache_key] = (result, time.time())
         return result
 
+    # Fallback to yfinance if FMP fails
+    if not YFINANCE_AVAILABLE:
+        return None
+
     try:
+        logger.info(f"FMP failed, trying yfinance for {ticker}")
         start_time = time.time()
         stock = yf.Ticker(ticker)
         info = stock.info
@@ -113,17 +118,7 @@ def get_stock_info(ticker):
         return result
 
     except Exception as e:
-        error_msg = str(e)
-        logger.error(f"Error fetching stock info for {ticker}: {error_msg}")
-
-        # If rate limited, try FMP API as fallback
-        if 'rate limit' in error_msg.lower() or 'too many requests' in error_msg.lower():
-            logger.info(f"yfinance rate limited, trying FMP API for {ticker}")
-            result = get_stock_info_from_fmp(ticker)
-            if result:
-                stock_info_cache[cache_key] = (result, time.time())
-            return result
-
+        logger.error(f"Both FMP and yfinance failed for {ticker}: {e}")
         return None
 
 def serialize_report_progress(report: 'ReportProgress') -> Dict:
