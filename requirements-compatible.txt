@@ -1,3 +1,32 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:e77af22a76eedc1be9331d637b646a2b0f0fe2717517e4092f36f042c395c424
-size 533
+# Python 3.13 compatible requirements
+Flask==3.0.0
+Flask-SocketIO==5.3.6
+
+# Use latest pandas version for Python 3.13 compatibility
+pandas>=2.1.4
+numpy>=1.26.0
+
+# HTTP requests
+requests==2.31.0
+
+# Environment management
+python-dotenv==1.0.0
+
+# Async support
+python-socketio==5.9.0
+python-engineio==4.7.1
+
+# Date handling
+python-dateutil==2.8.2
+
+# Utilities
+six==1.16.0
+
+# Alternative to yfinance that's more stable
+yfinance>=0.2.30
+
+# For SEC filing downloads
+sec-edgar-downloader==5.0.1
+
+# For production deployment
+gunicorn==21.2.0
