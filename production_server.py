@@ -540,14 +540,19 @@ def check_abort(report_id: str):
 
 def real_report_generator_worker():
     """Real background worker using Remote LLM for report generation"""
-    # Import the real generator
+    # Import the real generator and data fetcher
     try:
         from src.utils.remote_llm_client import RemoteEquityResearchGenerator
-        generator = RemoteEquityResearchGenerator(ticker="PLACEHOLDER")
-        logger.info("Remote LLM generator initialized successfully")
+        from src.data_pipeline.orchestrator import DataOrchestrator
+
+        generator = RemoteEquityResearchGenerator()
+        data_orchestrator = DataOrchestrator()
+        logger.info("Remote LLM generator and data orchestrator initialized successfully")
     except Exception as e:
         logger.error(f"Failed to initialize Remote LLM generator: {e}")
         logger.warning("Falling back to mock generator")
+        import traceback
+        traceback.print_exc()
         # Fallback to mock if import fails
         mock_report_generator_worker()
         return
@@ -568,27 +573,68 @@ def real_report_generator_worker():
             try:
                 check_abort(report_id)
 
-                # Update generator ticker
-                generator.ticker = ticker
-
-                # Phase 1: Fetching data
+                # Phase 1: Fetching real data
                 status_manager.update_progress(
                     report_id,
                     status='fetching_data',
                     progress=10,
                     current_section='Fetching company data and financials...'
                 )
+
+                logger.info(f"Fetching comprehensive data for {ticker}")
+                company_dataset = data_orchestrator.refresh_company_data(ticker)
+
                 check_abort(report_id)
 
-                # Phase 2: Generating report
+                # Phase 2: Preparing data for LLM
+                status_manager.update_progress(
+                    report_id,
+                    status='preparing_data',
+                    progress=25,
+                    current_section='Preparing data for analysis...'
+                )
+
+                # Extract and structure data for the LLM
+                company_data = {
+                    'ticker': ticker,
+                    'name': company_dataset.snapshot.name,
+                    'sector': company_dataset.snapshot.sector,
+                    'industry': company_dataset.snapshot.industry,
+                    'market_cap': company_dataset.snapshot.market_cap,
+                    'current_price': company_dataset.snapshot.current_price,
+                }
+
+                financial_data = {
+                    'fundamentals': company_dataset.financials.fundamentals,
+                    'ratios': company_dataset.financials.ratios,
+                    'price_history': company_dataset.financials.price_history,
+                }
+
+                market_data = {
+                    'analyst_estimates': company_dataset.supplemental.get('analyst_estimates', {}),
+                    'recent_headlines': company_dataset.supplemental.get('recent_headlines', []),
+                    'headline_sentiment': company_dataset.supplemental.get('headline_sentiment', {}),
+                    'peer_metrics': company_dataset.supplemental.get('peer_metrics', {}),
+                }
+
+                # Set data in generator
+                generator.ticker = ticker
+                generator.set_company_data(company_data)
+                generator.set_financial_data(financial_data)
+                generator.set_market_data(market_data)
+
+                check_abort(report_id)
+
+                # Phase 3: Generating report with AI
                 status_manager.update_progress(
                     report_id,
                     status='generating_sections',
-                    progress=30,
-                    current_section='Generating comprehensive analysis...'
+                    progress=40,
+                    current_section='Generating AI analysis with real data...'
                 )
 
                 # Generate the actual report
+                logger.info(f"Generating report for {ticker} with real data")
                 report_content = generator.generate_comprehensive_report(ticker=ticker)
 
                 check_abort(report_id)
