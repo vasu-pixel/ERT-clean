@@ -538,8 +538,116 @@ def check_abort(report_id: str):
     if status_manager.abort_event.is_set():
         raise AbortSignal("Global abort event set")
 
+def real_report_generator_worker():
+    """Real background worker using Remote LLM for report generation"""
+    # Import the real generator
+    try:
+        from src.utils.remote_llm_client import RemoteEquityResearchGenerator
+        generator = RemoteEquityResearchGenerator(ticker="PLACEHOLDER")
+        logger.info("Remote LLM generator initialized successfully")
+    except Exception as e:
+        logger.error(f"Failed to initialize Remote LLM generator: {e}")
+        logger.warning("Falling back to mock generator")
+        # Fallback to mock if import fails
+        mock_report_generator_worker()
+        return
+
+    while True:
+        try:
+            # Get next report from queue (blocking)
+            report_id = status_manager.report_queue.get(timeout=1)
+
+            if report_id not in status_manager.active_reports:
+                continue
+
+            report = status_manager.active_reports[report_id]
+            ticker = report.ticker
+
+            logger.info(f"Starting real report generation for {ticker} (ID: {report_id})")
+
+            try:
+                check_abort(report_id)
+
+                # Update generator ticker
+                generator.ticker = ticker
+
+                # Phase 1: Fetching data
+                status_manager.update_progress(
+                    report_id,
+                    status='fetching_data',
+                    progress=10,
+                    current_section='Fetching company data and financials...'
+                )
+                check_abort(report_id)
+
+                # Phase 2: Generating report
+                status_manager.update_progress(
+                    report_id,
+                    status='generating_sections',
+                    progress=30,
+                    current_section='Generating comprehensive analysis...'
+                )
+
+                # Generate the actual report
+                report_content = generator.generate_comprehensive_report(ticker=ticker)
+
+                check_abort(report_id)
+
+                # Phase 3: Saving report
+                status_manager.update_progress(
+                    report_id,
+                    status='finalizing',
+                    progress=90,
+                    current_section='Saving report...'
+                )
+
+                # Save report to file
+                reports_dir = Path(project_root) / 'reports'
+                reports_dir.mkdir(exist_ok=True)
+                report_filename = f"{ticker}_{int(time.time())}.md"
+                report_path = reports_dir / report_filename
+
+                with open(report_path, 'w') as f:
+                    f.write(report_content)
+
+                logger.info(f"Report saved to {report_path}")
+
+                # Complete successfully
+                status_manager.complete_report(
+                    report_id,
+                    success=True,
+                    report_path=str(report_path)
+                )
+
+            except AbortSignal:
+                logger.info(f"Abort requested for {ticker} (ID: {report_id})")
+                status_manager.update_progress(
+                    report_id,
+                    status='aborted',
+                    current_section='Report aborted by user',
+                    error_message='Report aborted by user',
+                    progress=report.progress
+                )
+                status_manager.complete_report(report_id, success=False)
+                continue
+            except Exception as e:
+                logger.error(f"Error generating report for {ticker}: {e}")
+                import traceback
+                traceback.print_exc()
+                status_manager.update_progress(
+                    report_id,
+                    error_message=str(e)
+                )
+                status_manager.complete_report(report_id, success=False)
+
+        except queue.Empty:
+            continue
+        except Exception as e:
+            logger.error(f"Error in report generator worker: {e}")
+            time.sleep(5)
+
 def mock_report_generator_worker():
-    """Mock background worker for demo purposes"""
+    """Mock background worker for demo purposes (fallback)"""
     while True:
         try:
             # Get next report from queue (blocking)
@@ -611,9 +719,9 @@ def mock_report_generator_worker():
 
 def start_background_worker():
     """Start the background worker thread"""
-    worker_thread = threading.Thread(target=mock_report_generator_worker, daemon=True)
+    worker_thread = threading.Thread(target=real_report_generator_worker, daemon=True)
     worker_thread.start()
-    logger.info("Background mock report generator worker started")
+    logger.info("Background real report generator worker started")
 
 def _ensure_directories():
     reports_dir = project_root / 'reports'
