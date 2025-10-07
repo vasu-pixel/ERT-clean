@@ -32,18 +32,56 @@ except ImportError:
     logger.warning("yfinance not available - stock data features disabled")
     YFINANCE_AVAILABLE = False
 
-# Mock function if yfinance not available
+# Cache for stock info (5 minute TTL)
+stock_info_cache = {}
+CACHE_TTL = 300  # 5 minutes
+
+def get_stock_info_from_fmp(ticker):
+    """Fallback to FMP API when yfinance is rate limited"""
+    fmp_api_key = os.getenv('FMP_API_KEY')
+    if not fmp_api_key:
+        return None
+
+    try:
+        import requests
+        # Get quote
+        quote_url = f"https://financialmodelingprep.com/api/v3/quote/{ticker}?apikey={fmp_api_key}"
+        response = requests.get(quote_url, timeout=5)
+
+        if response.status_code == 200:
+            data = response.json()
+            if data and len(data) > 0:
+                quote = data[0]
+                return {
+                    'ticker': ticker,
+                    'name': quote.get('name', ticker),
+                    'price': quote.get('price'),
+                    'price_change': quote.get('change'),
+                    'percent_change': quote.get('changesPercentage'),
+                    'market_cap': quote.get('marketCap'),
+                    'sector': quote.get('sector'),
+                }
+    except Exception as e:
+        logger.error(f"FMP API error for {ticker}: {e}")
+
+    return None
+
 def get_stock_info(ticker):
+    """Get stock info with caching and fallback to FMP API"""
+    # Check cache first
+    cache_key = ticker
+    if cache_key in stock_info_cache:
+        cached_data, timestamp = stock_info_cache[cache_key]
+        if time.time() - timestamp < CACHE_TTL:
+            logger.info(f"Returning cached data for {ticker}")
+            return cached_data
+
     if not YFINANCE_AVAILABLE:
-        return {
-            'ticker': ticker,
-            'name': f'{ticker} Corporation',
-            'price': 100.0,
-            'price_change': 2.5,
-            'percent_change': 2.5,
-            'market_cap': 1000000000,
-            'sector': 'Technology',
-        }
+        # Try FMP as fallback
+        result = get_stock_info_from_fmp(ticker)
+        if result:
+            stock_info_cache[cache_key] = (result, time.time())
+        return result
 
     try:
         start_time = time.time()
@@ -60,7 +98,7 @@ def get_stock_info(ticker):
         price_change = price - previous_close if price and previous_close else 0
         percent_change = (price_change / previous_close) * 100 if previous_close else 0
 
-        return {
+        result = {
             'ticker': ticker,
             'name': info.get('shortName'),
             'price': price,
@@ -69,8 +107,23 @@ def get_stock_info(ticker):
             'market_cap': info.get('marketCap'),
             'sector': info.get('sector'),
         }
+
+        # Cache the result
+        stock_info_cache[cache_key] = (result, time.time())
+        return result
+
     except Exception as e:
-        logger.error(f"Error fetching stock info for {ticker}: {e}")
+        error_msg = str(e)
+        logger.error(f"Error fetching stock info for {ticker}: {error_msg}")
+
+        # If rate limited, try FMP API as fallback
+        if 'rate limit' in error_msg.lower() or 'too many requests' in error_msg.lower():
+            logger.info(f"yfinance rate limited, trying FMP API for {ticker}")
+            result = get_stock_info_from_fmp(ticker)
+            if result:
+                stock_info_cache[cache_key] = (result, time.time())
+            return result
+
         return None
 
 def serialize_report_progress(report: 'ReportProgress') -> Dict:
