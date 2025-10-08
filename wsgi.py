@@ -17,30 +17,8 @@ sys.path.insert(0, str(project_root / "src"))
 os.environ.setdefault('FLASK_ENV', 'production')
 os.environ.setdefault('ERT_DEBUG', 'false')
 
-from src.ui.status_server import create_app
-from src.ui.status_server_config import StatusServerConfig
-
-def create_wsgi_app():
-    """Create Flask application for WSGI deployment"""
-    try:
-        # Load configuration from environment
-        config = StatusServerConfig.from_environment()
-
-        # Validate configuration
-        if not config.validate():
-            raise ValueError("Invalid configuration")
-
-        # Create Flask app
-        app = create_app(config)
-
-        return app
-
-    except Exception as e:
-        print(f"Failed to create WSGI app: {e}")
-        raise
-
-# Create the application instance
-app = create_wsgi_app()
+# Import the production server with real data fetching and LLM integration
+from production_server import app
 
 if __name__ == "__main__":
     # For local testing

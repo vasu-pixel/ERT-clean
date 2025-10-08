@@ -535,14 +535,25 @@ def check_abort(report_id: str):
 
 def real_report_generator_worker():
     """Real background worker using Remote LLM for report generation"""
-    # Import the real generator and data fetcher
+    # Import the real generator (moved here to avoid circular import at module level)
     try:
-        from src.utils.remote_llm_client import RemoteEquityResearchGenerator
-        from src.data_pipeline.orchestrator import DataOrchestrator
+        import sys
+        import importlib
 
+        # Import remote LLM client
+        from src.utils.remote_llm_client import RemoteEquityResearchGenerator
         generator = RemoteEquityResearchGenerator()
-        data_orchestrator = DataOrchestrator()
-        logger.info("Remote LLM generator and data orchestrator initialized successfully")
+
+        # Import data orchestrator with error handling for circular imports
+        try:
+            from src.data_pipeline.orchestrator import DataOrchestrator
+            data_orchestrator = DataOrchestrator()
+        except ImportError as import_err:
+            logger.warning(f"DataOrchestrator import failed (circular import): {import_err}")
+            logger.info("Using simplified data fetching without DataOrchestrator")
+            data_orchestrator = None
+
+        logger.info("Remote LLM generator initialized successfully")
     except Exception as e:
         logger.error(f"Failed to initialize Remote LLM generator: {e}")
         logger.warning("Falling back to mock generator")
@@ -577,7 +588,34 @@ def real_report_generator_worker():
                 )
 
                 logger.info(f"Fetching comprehensive data for {ticker}")
-                company_dataset = data_orchestrator.refresh_company_data(ticker)
+
+                if data_orchestrator:
+                    company_dataset = data_orchestrator.refresh_company_data(ticker)
+                else:
+                    # Simplified fallback - use basic yfinance data
+                    logger.info("Using simplified data fetching (DataOrchestrator unavailable)")
+                    import yfinance as yf
+                    stock = yf.Ticker(ticker)
+                    info = stock.info
+
+                    # Create minimal dataset
+                    class SimpleDataset:
+                        def __init__(self, info):
+                            self.snapshot = type('obj', (object,), {
+                                'name': info.get('longName', ticker),
+                                'sector': info.get('sector', 'Unknown'),
+                                'industry': info.get('industry', 'Unknown'),
+                                'market_cap': info.get('marketCap'),
+                                'current_price': info.get('currentPrice')
+                            })()
+                            self.financials = type('obj', (object,), {
+                                'fundamentals': {k: v for k, v in info.items() if isinstance(v, (int, float))},
+                                'ratios': {},
+                                'price_history': None
+                            })()
+                            self.supplemental = {}
+
+                    company_dataset = SimpleDataset(info)
 
                 check_abort(report_id)
 
