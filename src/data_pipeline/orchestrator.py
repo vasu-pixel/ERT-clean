@@ -2,9 +2,11 @@
 from __future__ import annotations
 
 import logging
+import os
 from datetime import datetime, timedelta
-from typing import Dict, Optional, List
+from typing import Dict, Optional, List, Any
 
+import requests
 from src.fetch.financial_data import get_fundamentals
 from dataclasses import asdict
 
@@ -21,12 +23,22 @@ logger = logging.getLogger(__name__)
 class DataOrchestrator:
     """Fetches and normalizes company data with lightweight caching."""
 
-    def __init__(self, cache_ttl: timedelta | None = None, deterministic_config: Optional[Dict[str, Dict]] = None) -> None:
+    def __init__(
+        self,
+        cache_ttl: timedelta | None = None,
+        deterministic_config: Optional[Dict[str, Dict]] = None,
+        peer_mapping: Optional[Dict[str, List[str]]] = None,
+        config: Optional[Dict[str, Any]] = None,
+        **_: Any,
+    ) -> None:
+        config = config or {}
         self._cache: Dict[str, tuple[datetime, CompanyDataset]] = {}
         self._cache_ttl = cache_ttl or timedelta(minutes=30)
         self._document_store = FileBackedDocumentStore()
         self._sec_ingestor = SECIngestor(self._document_store)
-        self._deterministic_config = deterministic_config or {}
+        det_config = deterministic_config or config.get("deterministic_config") or {}
+        self._deterministic_config = det_config
+        self._peer_mapping = peer_mapping or config.get("peer_mapping") or {}
 
     def refresh_company_data(self, ticker: str, force: bool = False) -> CompanyDataset:
         ticker = ticker.upper()
@@ -67,7 +79,12 @@ class DataOrchestrator:
             "segment_config": segment_config,
         }
 
-        supplemental["peer_metrics"] = self._collect_peer_metrics(ticker, snapshot.sector)
+        try:
+            peer_metrics, peer_candidates = self._collect_peer_metrics(ticker, snapshot.sector)
+            supplemental["peer_metrics"] = peer_metrics
+            supplemental["peer_candidates"] = peer_candidates
+        except ValueError as exc:
+            raise ValueError(f"Failed to collect peer metrics for {ticker}: {exc}") from exc
 
         try:
             sec_chunks = self._sec_ingestor.ingest_latest_10k(ticker)
@@ -121,19 +138,23 @@ class DataOrchestrator:
         ]
         return {key: fundamentals.get(key) for key in keys}
 
-    def _collect_peer_metrics(self, ticker: str, sector: str, limit: int = 5) -> List[Dict[str, Optional[float]]]:
-        sector_mapping = {
-            'Technology': ['AAPL', 'MSFT', 'GOOGL', 'AMZN', 'META', 'NVDA'],
-            'Financial Services': ['JPM', 'BAC', 'WFC', 'C', 'GS', 'MS'],
-            'Healthcare': ['JNJ', 'PFE', 'UNH', 'ABBV', 'MRK'],
-            'Consumer Cyclical': ['AMZN', 'TSLA', 'HD', 'NKE', 'MCD'],
-            'Consumer Defensive': ['WMT', 'PG', 'KO', 'PEP', 'COST'],
-            'Energy': ['XOM', 'CVX', 'COP', 'EOG', 'SLB'],
-            'Industrials': ['BA', 'CAT', 'GE', 'MMM', 'HON'],
-            'Communication Services': ['GOOGL', 'META', 'NFLX', 'DIS', 'CMCSA'],
-        }
+    def _collect_peer_metrics(
+        self, ticker: str, sector: str, limit: int = 5
+    ) -> tuple[List[Dict[str, Optional[float]]], List[str]]:
+        peer_candidates: List[str] = []
 
-        peer_candidates = sector_mapping.get(sector, [])
+        configured_peers = (self._peer_mapping or {}).get(sector)
+        if configured_peers:
+            peer_candidates = [p.upper() for p in configured_peers if isinstance(p, str)]
+
+        if not peer_candidates:
+            peer_candidates = self._fetch_peer_candidates(ticker, sector)
+
+        if not peer_candidates:
+            raise ValueError(
+                f"Live peer lookup returned no peers for {ticker}. Ensure your market data feed is available."
+            )
+
         peers: List[Dict[str, Optional[float]]] = []
         for peer in peer_candidates:
             if peer.upper() == ticker.upper():
@@ -159,5 +180,43 @@ class DataOrchestrator:
                 logger.debug("Failed to fetch peer metrics for %s: %s", peer, exc)
             if len(peers) >= limit:
                 break
+
+        if not peers:
+            raise ValueError(
+                f"Unable to assemble peer metrics for {ticker}. Live fundamentals lookup failed."
+            )
+
+        return peers, peer_candidates
+
+    def _fetch_peer_candidates(self, ticker: str, sector: str) -> List[str]:
+        api_key = os.getenv("FMP_API_KEY")
+        if not api_key:
+            logger.error("FMP_API_KEY missing from environment; cannot perform live peer lookup.")
+            raise ValueError("Live peer lookup disabled: set FMP_API_KEY in environment.")
+
+        url = f"https://financialmodelingprep.com/api/v3/stock_peers?symbol={ticker}&apikey={api_key}"
+        try:
+            response = requests.get(url, timeout=10)
+            response.raise_for_status()
+            payload = response.json() or {}
+        except Exception as exc:
+            raise ValueError(f"Live peer lookup failed for {ticker}: {exc}") from exc
+
+        peers_raw = []
+        if isinstance(payload, dict):
+            peers_raw = payload.get("peersList") or payload.get("peers") or []
+        elif isinstance(payload, list) and payload:
+            # some endpoints return list with dict entry at index 0
+            first = payload[0]
+            if isinstance(first, dict):
+                peers_raw = first.get("peersList") or first.get("peers") or []
+
+        peers = [p.upper() for p in peers_raw if isinstance(p, str) and p.strip()]
+
+        if not peers:
+            detail = f" in sector '{sector}'" if sector else ""
+            raise ValueError(
+                f"No peers returned for {ticker}{detail}. Verify upstream market data inputs."
+            )
 
         return peers

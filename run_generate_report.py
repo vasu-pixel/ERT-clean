@@ -176,13 +176,16 @@ class ReportRunner:
         try:
             timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
 
+            total_requests = len(successful) + len(failed)
+            success_rate = (len(successful) / total_requests * 100) if total_requests else 0.0
+
             summary = {
                 'batch_date': self.start_time.isoformat(),
                 'completion_date': datetime.now().isoformat(),
-                'total_tickers': len(successful) + len(failed),
+                'total_tickers': total_requests,
                 'successful_reports': len(successful),
                 'failed_reports': len(failed),
-                'success_rate': len(successful) / (len(successful) + len(failed)) * 100,
+                'success_rate': success_rate,
                 'successful_tickers': successful,
                 'failed_tickers': failed,
                 'processing_time_minutes': (datetime.now() - self.start_time).total_seconds() / 60

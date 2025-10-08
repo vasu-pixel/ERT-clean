@@ -64,8 +64,8 @@ class CompanyProfile:
     company_name: str
     sector: str
     industry: str
-    market_cap: float
-    current_price: float
+    market_cap: Optional[float]
+    current_price: Optional[float]
     target_price: float
     recommendation: str
     financial_metrics: Dict
@@ -92,11 +92,17 @@ class StockReportGenerator:
         self.data_cache = {}
         self.config = self._load_config()
         deterministic_config = self._build_deterministic_config()
-        self.data_orchestrator = DataOrchestrator(deterministic_config=deterministic_config)
+        peer_mapping = self.config.get("peer_mapping") or {}
+        self.data_orchestrator = DataOrchestrator(
+            deterministic_config=deterministic_config,
+            peer_mapping=peer_mapping or None,
+            config=self.config,
+        )
         self.document_store = FileBackedDocumentStore()
         self.retriever = KeywordRetriever(self.document_store)
         self.guardrail_notes: List[str] = []
-        self.data_validator = DataValidator()
+        validator_config = self.config.get("validation_rules") or {}
+        self.data_validator = DataValidator(config=validator_config)
         try:
             self.template_config = load_template()
         except FileNotFoundError as exc:
@@ -135,6 +141,22 @@ class StockReportGenerator:
             "analysis_parameters": {
                 "peer_group_size": 5
             },
+            "peer_mapping": {},
+            "competitor_mapping": {},
+            "risk_factors": {
+                "base": [],
+                "by_sector": {},
+            },
+            "esg_defaults": {},
+            "validation_rules": {
+                'min_price': 0.01,
+                'max_price': 10000,
+                'min_market_cap': 1_000_000,
+                'max_pe_ratio': 1000,
+                'min_pe_ratio': -100,
+                'data_freshness_days': 7,
+                'placeholder_values': ['N/A', None, '', 'TBD', 'null']
+            },
             "forecast_defaults": {
                 "default_revenue_growth": 0.05,
                 "default_eps_growth": 0.05
@@ -171,15 +193,6 @@ class StockReportGenerator:
             "valuation": valuation_cfg,
         }
 
-    def _build_deterministic_config(self) -> Dict[str, Dict[str, Any]]:
-        """Assemble configuration payload for deterministic analytics."""
-        forecast_cfg = self.config.get("forecast_defaults", {}) or {}
-        valuation_cfg = self.config.get("valuation", {}) or {}
-        return {
-            "forecast": forecast_cfg,
-            "valuation": valuation_cfg,
-        }
-
     def fetch_comprehensive_data(self, ticker: str) -> CompanyProfile:
         """Fetch normalized company data via the orchestration layer."""
 
@@ -194,7 +207,7 @@ class StockReportGenerator:
 
             financial_metrics = self._calculate_key_metrics(info, financials, balance_sheet, cash_flow)
 
-            competitors = self._fetch_competitors(ticker, dataset.snapshot.sector)
+            competitors = self._fetch_competitors(dataset, ticker)
             esg_data = self._fetch_esg_data(ticker)
             risk_factors = self._identify_risk_factors(info, ticker)
 
@@ -203,9 +216,9 @@ class StockReportGenerator:
                 try:
                     current_price = float(stock.history(period="1d").get('Close').iloc[-1])
                 except Exception:
-                    current_price = 0
+                    current_price = None
 
-            market_cap = dataset.snapshot.market_cap or info.get('marketCap') or 0
+            market_cap = dataset.snapshot.market_cap or info.get('marketCap')
 
             company_profile = CompanyProfile(
                 ticker=dataset.snapshot.ticker,
@@ -213,7 +226,7 @@ class StockReportGenerator:
                 sector=dataset.snapshot.sector,
                 industry=dataset.snapshot.industry,
                 market_cap=market_cap,
-                current_price=current_price or 0,
+                current_price=current_price,
                 target_price=0,
                 recommendation="HOLD",
                 financial_metrics=financial_metrics,
@@ -409,26 +422,30 @@ class StockReportGenerator:
         except:
             return 'N/A'
 
-    def _fetch_competitors(self, ticker: str, sector: str) -> List[str]:
-        """Fetch competitor information"""
-        # Use your existing competitor identification logic
-        # or integrate with external APIs
-        competitor_mapping = {
-            'Technology': ['AAPL', 'MSFT', 'GOOGL', 'AMZN', 'META'],
-            'Financial Services': ['JPM', 'BAC', 'WFC', 'C', 'GS'],
-            'Healthcare': ['JNJ', 'PFE', 'UNH', 'ABBV', 'MRK'],
-            'Consumer Cyclical': ['AMZN', 'TSLA', 'HD', 'NKE', 'MCD'],
-            'Energy': ['XOM', 'CVX', 'COP', 'EOG', 'SLB'],
-            'Industrials': ['BA', 'CAT', 'GE', 'MMM', 'HON']
-        }
+    def _fetch_competitors(self, dataset, ticker: str) -> List[str]:
+        """Derive competitor list from live peer data."""
+        supplemental = getattr(dataset, "supplemental", {}) or {}
 
-        competitors = competitor_mapping.get(sector, [])
-        # Remove the target ticker from competitors list
-        return [comp for comp in competitors if comp != ticker.upper()]
+        candidates = supplemental.get("peer_candidates") or []
+        if not candidates and supplemental.get("peer_metrics"):
+            candidates = [
+                entry.get("ticker")
+                for entry in supplemental.get("peer_metrics", [])
+                if isinstance(entry, dict)
+            ]
+
+        competitors = [comp for comp in candidates if isinstance(comp, str) and comp.upper() != ticker.upper()]
+
+        if not competitors:
+            raise DataIntegrityError(
+                f"Competitor lookup failed for {ticker}. Live peer data unavailable; please rerun market research ingestion."
+            )
+
+        return [comp.upper() for comp in competitors]
 
     def _fetch_esg_data(self, ticker: str) -> Dict:
         """Fetch ESG data (placeholder - integrate with ESG data providers)"""
-        return {
+        defaults = self.config.get("esg_defaults") or {
             'esg_score': 'N/A',
             'environmental_score': 'N/A',
             'social_score': 'N/A',
@@ -436,32 +453,45 @@ class StockReportGenerator:
             'controversy_level': 'Low',
             'sustainability_initiatives': []
         }
+        return {
+            'esg_score': defaults.get('esg_score', 'N/A'),
+            'environmental_score': defaults.get('environmental_score', 'N/A'),
+            'social_score': defaults.get('social_score', 'N/A'),
+            'governance_score': defaults.get('governance_score', 'N/A'),
+            'controversy_level': defaults.get('controversy_level', 'Unknown'),
+            'sustainability_initiatives': defaults.get('sustainability_initiatives', []),
+        }
 
     def _identify_risk_factors(self, info: Dict, ticker: str) -> List[str]:
         """Identify key risk factors"""
-        risks = [
+        risk_config = self.config.get("risk_factors") or {}
+        base_risks = list(risk_config.get("base", [
             'Market volatility and economic uncertainty',
             'Competitive pressure from industry peers',
             'Regulatory changes affecting operations',
-            'Interest rate and inflation risks'
-        ]
+            'Interest rate and inflation risks',
+        ]))
 
-        # Add sector-specific risks
-        sector = info.get('sector', '')
-        if 'Technology' in sector:
-            risks.extend([
+        sector_risks_map = risk_config.get("by_sector", {
+            'Technology': [
                 'Rapid technological obsolescence',
                 'Cybersecurity threats',
                 'Data privacy regulations'
-            ])
-        elif 'Financial' in sector:
-            risks.extend([
+            ],
+            'Financial': [
                 'Credit risk and loan defaults',
                 'Regulatory capital requirements',
                 'Interest rate sensitivity'
-            ])
+            ]
+        })
+        sector = info.get('sector') or ''
+        sector_specific: List[str] = []
+        for key, risk_list in sector_risks_map.items():
+            if key and key.lower() in sector.lower():
+                sector_specific.extend(risk_list)
 
-        return risks
+        combined = base_risks + sector_specific
+        return combined
 
     def _get_retrieval_context(self, ticker: str, query: str) -> Tuple[str, List[Any]]:
         documents = self.retriever.retrieve(ticker, query, top_k=5)

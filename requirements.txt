@@ -40,5 +40,5 @@ black>=22.0.0
 # mlx-lm
 
 # Optional: OpenAI (for fallback/comparison)
-# openai>=1.0.0
+openai>=1.0.0
 # Force update to remove LFS

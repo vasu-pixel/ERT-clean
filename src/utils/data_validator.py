@@ -27,21 +27,29 @@ class StaleDataError(Exception):
 class DataValidator:
     """Comprehensive data validation for equity research reports"""
 
-    def __init__(self):
-        self.validation_rules = {
-            'critical_fields': [
-                'current_price', 'market_cap', 'ticker', 'company_name'
-            ],
-            'financial_metrics': [
-                'pe_ratio', 'revenue_growth', 'profit_margin'
-            ],
-            'min_price': 0.01,  # Minimum valid stock price
-            'max_price': 10000,  # Maximum reasonable stock price
-            'min_market_cap': 1_000_000,  # $1M minimum market cap
-            'max_pe_ratio': 1000,  # Maximum reasonable P/E
-            'min_pe_ratio': -100,  # Minimum reasonable P/E (can be negative)
-            'data_freshness_days': 7  # Data older than 7 days triggers warning
-        }
+    _DEFAULT_RULES = {
+        'critical_fields': [
+            'current_price', 'market_cap', 'ticker', 'company_name'
+        ],
+        'financial_metrics': [
+            'pe_ratio', 'revenue_growth', 'profit_margin'
+        ],
+        'min_price': 0.01,
+        'max_price': 10000,
+        'min_market_cap': 1_000_000,
+        'max_pe_ratio': 1000,
+        'min_pe_ratio': -100,
+        'data_freshness_days': 7,
+        'placeholder_values': ['N/A', None, '', 'TBD', 'null'],
+    }
+
+    def __init__(self, config: Optional[Dict[str, Any]] = None):
+        rules = dict(self._DEFAULT_RULES)
+        if config:
+            rules.update({k: v for k, v in config.items() if v is not None})
+
+        self.validation_rules = rules
+        self.placeholder_values = list(rules.get('placeholder_values', []))
 
     def validate_company_profile(self, company_profile) -> ValidationResult:
         """Validate company profile data comprehensively"""
@@ -50,8 +58,9 @@ class DataValidator:
 
         try:
             # Check critical fields
-            critical_errors = self._validate_critical_fields(company_profile)
+            critical_errors, critical_warnings = self._validate_critical_fields(company_profile)
             errors.extend(critical_errors)
+            warnings.extend(critical_warnings)
 
             # Check financial metrics
             financial_warnings = self._validate_financial_metrics(company_profile)
@@ -61,9 +70,9 @@ class DataValidator:
             consistency_errors = self._validate_data_consistency(company_profile)
             errors.extend(consistency_errors)
 
-            # Check for placeholder/null values
-            placeholder_errors = self._validate_no_placeholders(company_profile)
-            errors.extend(placeholder_errors)
+            # Check for placeholder/null values (treat as warnings to keep pipeline resilient)
+            placeholder_warnings = self._validate_no_placeholders(company_profile)
+            warnings.extend(placeholder_warnings)
 
             # Calculate validation score
             score = self._calculate_validation_score(errors, warnings)
@@ -91,9 +100,10 @@ class DataValidator:
                 score=0
             )
 
-    def _validate_critical_fields(self, profile) -> List[str]:
-        """Validate that critical fields are present and valid"""
-        errors = []
+    def _validate_critical_fields(self, profile) -> Tuple[List[str], List[str]]:
+        """Validate that critical fields are present and flag anomalies"""
+        errors: List[str] = []
+        warnings: List[str] = []
 
         # Check ticker
         if not hasattr(profile, 'ticker') or not profile.ticker:
@@ -106,24 +116,38 @@ class DataValidator:
             errors.append("Missing or empty company name")
 
         # Check current price
-        if not hasattr(profile, 'current_price') or not profile.current_price:
-            errors.append("Missing current price")
-        elif profile.current_price <= 0:
-            errors.append(f"Invalid current price: ${profile.current_price}")
-        elif profile.current_price < self.validation_rules['min_price']:
-            errors.append(f"Current price too low: ${profile.current_price}")
-        elif profile.current_price > self.validation_rules['max_price']:
-            errors.append(f"Current price suspiciously high: ${profile.current_price}")
+        price = getattr(profile, 'current_price', None)
+        if price is None:
+            warnings.append("Missing current price")
+        else:
+            try:
+                price_value = float(price)
+            except (TypeError, ValueError):
+                errors.append(f"Invalid current price format: {price}")
+            else:
+                if price_value <= 0:
+                    errors.append(f"Invalid current price: ${price_value}")
+                elif price_value < self.validation_rules['min_price']:
+                    warnings.append(f"Current price unusually low: ${price_value}")
+                elif price_value > self.validation_rules['max_price']:
+                    warnings.append(f"Current price unusually high: ${price_value}")
 
         # Check market cap
-        if not hasattr(profile, 'market_cap') or not profile.market_cap:
-            errors.append("Missing market capitalization")
-        elif profile.market_cap <= 0:
-            errors.append(f"Invalid market cap: ${profile.market_cap}")
-        elif profile.market_cap < self.validation_rules['min_market_cap']:
-            errors.append(f"Market cap too low: ${profile.market_cap}")
+        market_cap = getattr(profile, 'market_cap', None)
+        if market_cap is None:
+            warnings.append("Missing market capitalization")
+        else:
+            try:
+                market_cap_value = float(market_cap)
+            except (TypeError, ValueError):
+                errors.append(f"Invalid market cap format: {market_cap}")
+            else:
+                if market_cap_value <= 0:
+                    warnings.append(f"Market cap non-positive: ${market_cap_value}")
+                elif market_cap_value < self.validation_rules['min_market_cap']:
+                    warnings.append(f"Market cap unusually low: ${market_cap_value}")
 
-        return errors
+        return errors, warnings
 
     def _validate_financial_metrics(self, profile) -> List[str]:
         """Validate financial metrics for reasonableness"""
@@ -200,10 +224,10 @@ class DataValidator:
 
     def _validate_no_placeholders(self, profile) -> List[str]:
         """Check for placeholder or null values in critical fields"""
-        errors = []
+        warnings: List[str] = []
 
         # Common placeholder indicators
-        placeholder_values = [0, 0.0, '0.00', 'N/A', None, '', 'TBD', 'null']
+        placeholder_values = self.placeholder_values
 
         # Check deterministic forecasts if available
         if hasattr(profile, 'deterministic') and profile.deterministic:
@@ -215,21 +239,21 @@ class DataValidator:
 
             for period, value in revenue.items():
                 if value in placeholder_values:
-                    errors.append(f"Revenue forecast for {period} is placeholder: {value}")
+                    warnings.append(f"Revenue forecast for {period} is placeholder: {value}")
 
             # Check EPS forecasts
             eps = forecast.get('eps', {})
             for period, value in eps.items():
                 if value in placeholder_values:
-                    errors.append(f"EPS forecast for {period} is placeholder: {value}")
+                    warnings.append(f"EPS forecast for {period} is placeholder: {value}")
 
             # Check DCF value
             valuation = deterministic.get('valuation', {})
             dcf_value = valuation.get('dcf_value')
             if dcf_value in placeholder_values:
-                errors.append(f"DCF valuation is placeholder: {dcf_value}")
+                warnings.append(f"DCF valuation is placeholder: {dcf_value}")
 
-        return errors
+        return warnings
 
     def _calculate_validation_score(self, errors: List[str], warnings: List[str]) -> float:
         """Calculate overall validation score (0-100)"""
