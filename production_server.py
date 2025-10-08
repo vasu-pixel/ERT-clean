@@ -66,6 +66,53 @@ def get_stock_info_from_fmp(ticker):
 
     return None
 
+def get_stock_info_from_alpha_vantage(ticker: str) -> Optional[Dict[str, Any]]:
+    """Secondary fallback using Alpha Vantage GLOBAL_QUOTE endpoint."""
+    alpha_api_key = os.getenv('ALPHA_VANTAGE_API_KEY')
+    if not alpha_api_key:
+        return None
+
+    try:
+        import requests
+
+        quote_url = (
+            "https://www.alphavantage.co/query?function=GLOBAL_QUOTE"
+            f"&symbol={ticker}&apikey={alpha_api_key}"
+        )
+        response = requests.get(quote_url, timeout=5)
+        response.raise_for_status()
+        data = response.json() or {}
+        quote = data.get("Global Quote") or {}
+        if not quote:
+            logger.warning(f"Alpha Vantage returned no quote for {ticker}")
+            return None
+
+        def _safe_float(value: Any) -> Optional[float]:
+            try:
+                return float(value)
+            except (TypeError, ValueError):
+                return None
+
+        price = _safe_float(quote.get("05. price"))
+        previous_close = _safe_float(quote.get("08. previous close"))
+        price_change = _safe_float(quote.get("09. change"))
+        percent_change = _safe_float(quote.get("10. change percent"))
+        if percent_change is not None:
+            percent_change = percent_change if percent_change <= 1 else percent_change  # already percent string
+
+        return {
+            'ticker': ticker,
+            'name': ticker,
+            'price': price,
+            'price_change': price_change,
+            'percent_change': percent_change,
+            'market_cap': None,
+            'sector': None,
+        }
+    except Exception as exc:
+        logger.error(f"Alpha Vantage API error for {ticker}: {exc}")
+        return None
+
 def get_stock_info(ticker):
     """Get stock info with caching and FMP as primary source"""
     # Check cache first
@@ -82,6 +129,13 @@ def get_stock_info(ticker):
     if result:
         stock_info_cache[cache_key] = (result, time.time())
         return result
+
+    # Secondary fallback: Alpha Vantage
+    logger.info(f"FMP failed, trying Alpha Vantage for {ticker}")
+    av_result = get_stock_info_from_alpha_vantage(ticker)
+    if av_result:
+        stock_info_cache[cache_key] = (av_result, time.time())
+        return av_result
 
     # Fallback to yfinance if FMP fails
     if not YFINANCE_AVAILABLE:
@@ -118,7 +172,7 @@ def get_stock_info(ticker):
         return result
 
     except Exception as e:
-        logger.error(f"Both FMP and yfinance failed for {ticker}: {e}")
+        logger.error(f"FMP, Alpha Vantage, and yfinance failed for {ticker}: {e}")
         return None
 
 def serialize_report_progress(report: 'ReportProgress') -> Dict:
