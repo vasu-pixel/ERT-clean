@@ -409,7 +409,7 @@ status_manager = ReportStatusManager()
 # Flask app setup
 app = Flask(__name__, template_folder='src/ui/templates', static_folder='src/ui/static')
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'minimal-animals-production-key')
-socketio = SocketIO(app, cors_allowed_origins="*")
+socketio = SocketIO(app, cors_allowed_origins="*", async_mode='threading')
 status_manager.set_socketio(socketio)
 
 @app.route('/')

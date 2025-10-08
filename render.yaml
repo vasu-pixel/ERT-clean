@@ -8,7 +8,7 @@ services:
     healthCheckPath: /health
     envVars:
       - key: PYTHON_VERSION
-        value: 3.10.12
+        value: 3.11.9
       - key: FLASK_ENV
         value: production
       - key: PYTHONPATH
@@ -22,7 +22,7 @@ services:
       - key: REMOTE_LLM_INTEGRATION
         value: true
       - key: ERT_LLM_BACKEND_URL
-        value: http://115.231.176.132:11434
+        value: https://izola-perissodactylous-maude.ngrok-free.dev
       - key: ERT_LLM_API_KEY
         value: ert-vast-api-key-2024
       - key: OLLAMA_MODEL

@@ -18,7 +18,14 @@ os.environ.setdefault('FLASK_ENV', 'production')
 os.environ.setdefault('ERT_DEBUG', 'false')
 
 # Import the production server with real data fetching and LLM integration
-from production_server import app
+from production_server import app, start_background_worker, _ensure_directories
+
+# Ensure required directories exist
+_ensure_directories()
+
+# Start the background worker for report generation
+# This is critical - without it, no reports will be generated!
+start_background_worker()
 
 if __name__ == "__main__":
     # For local testing
