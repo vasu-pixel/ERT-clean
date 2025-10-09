@@ -66,17 +66,25 @@ KEY_FIELDS = {
     "returnOnEquity": "returnOnEquity",
     "grossMargins": "grossMargins",
     "ebitdaMargins": "ebitdaMargins",
+    "operatingMargins": "operatingMargins",
+    "profitMargins": "profitMargins",
     "revenueGrowth": "revenueGrowth",
     "earningsGrowth": "earningsQuarterlyGrowth",
     "freeCashflow": "freeCashflow",
     "operatingCashflow": "operatingCashflow",
     "totalRevenue": "totalRevenue",
+    "netIncome": "netIncome",
+    "ebitda": "ebitda",
     "trailingEps": "trailingEps",
     "sharesOutstanding": "sharesOutstanding",
     "dividendYield": "dividendYield",
     "beta": "beta",
     "enterpriseValue": "enterpriseValue",
     "enterpriseToEbitda": "enterpriseToEbitda",
+    "totalAssets": "totalAssets",
+    "totalDebt": "totalDebt",
+    "totalCash": "totalCash",
+    "totalLiabilities": "totalLiabilities",
 }
 
 
@@ -153,6 +161,30 @@ def get_fundamentals(ticker: str) -> Dict[str, object]:
             **inlined,
             "statements": statements,
         }
+
+        # Extract missing fields from financial statements if available
+        if statements.get("income_statement") is not None and not statements["income_statement"].empty:
+            income_stmt = statements["income_statement"]
+
+            # Try to get Net Income from statement if missing from info
+            if not fundamentals.get("netIncome"):
+                for net_income_field in ["Net Income", "Net Income From Continuing Operation Net Minority Interest",
+                                        "Normalized Income", "Net Income From Continuing And Discontinued Operation"]:
+                    if net_income_field in income_stmt.index:
+                        fundamentals["netIncome"] = income_stmt.loc[net_income_field].iloc[0]
+                        logger.info(f"Extracted Net Income from statement for {ticker}: ${fundamentals['netIncome']:,.0f}")
+                        break
+
+        if statements.get("balance_sheet") is not None and not statements["balance_sheet"].empty:
+            balance_sheet = statements["balance_sheet"]
+
+            # Try to get Total Assets from balance sheet if missing
+            if not fundamentals.get("totalAssets"):
+                for assets_field in ["Total Assets", "Assets"]:
+                    if assets_field in balance_sheet.index:
+                        fundamentals["totalAssets"] = balance_sheet.loc[assets_field].iloc[0]
+                        logger.info(f"Extracted Total Assets from balance sheet for {ticker}: ${fundamentals['totalAssets']:,.0f}")
+                        break
 
         # Basic validation: ensure we have core metrics
         if fundamentals.get("totalRevenue") in (None, 0):
