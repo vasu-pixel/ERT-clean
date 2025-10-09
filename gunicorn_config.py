@@ -17,9 +17,9 @@ access_log_format = '%(h)s %(l)s %(u)s %(t)s "%(r)s" %(s)s %(b)s "%(f)s" "%(a)s"
 # Use only 1 worker for background thread consistency
 # Render free tier has limited resources, so optimize for reliability over throughput
 workers = 1  # Critical: Only 1 worker to ensure background thread persists
-worker_class = 'gthread'  # Use threaded workers for SocketIO compatibility
-threads = 4
-worker_connections = 1000
+worker_class = 'eventlet'  # Use eventlet for SocketIO WebSocket support
+# Note: eventlet doesn't use 'threads' parameter - it uses greenlets instead
+worker_connections = 1000  # Max concurrent connections per worker
 
 # Timeouts
 timeout = 120  # 2 minutes for long report generation
