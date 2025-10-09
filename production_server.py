@@ -500,7 +500,8 @@ class ReportStatusManager:
                 logger.warning("Cannot reset abort state - active reports still exist")
                 return False
 
-    def complete_report(self, report_id: str, success: bool = True, report_path: str = None, metadata: Optional[Dict] = None):
+    def complete_report(self, report_id: str, success: bool = True, report_path: str = None,
+                       pdf_path: str = None, excel_path: str = None, metadata: Optional[Dict] = None):
         """Mark a report as completed"""
         with self._lock:
             report = self.active_reports.get(report_id)
@@ -514,6 +515,10 @@ class ReportStatusManager:
                 report.current_section = 'Report completed successfully'
                 if report_path:
                     report.report_path = report_path
+                if pdf_path:
+                    report.pdf_path = pdf_path
+                if excel_path:
+                    report.excel_path = excel_path
             else:
                 if report.status != 'aborted':
                     report.status = 'failed'
