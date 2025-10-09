@@ -1,5 +1,11 @@
 #!/usr/bin/env python3
 # production_server.py - Full-featured production server for Render
+
+# CRITICAL: Eventlet monkey-patching MUST happen before any other imports
+# This prevents "maximum recursion depth exceeded" errors with requests library
+import eventlet
+eventlet.monkey_patch()
+
 import os
 import sys
 import json
