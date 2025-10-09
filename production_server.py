@@ -33,9 +33,9 @@ except ImportError:
     logger.warning("yfinance not available - stock data features disabled")
     YFINANCE_AVAILABLE = False
 
-# Cache for stock info (5 minute TTL)
+# Cache for stock info (30 minute TTL to reduce API calls)
 stock_info_cache = {}
-CACHE_TTL = 300  # 5 minutes
+CACHE_TTL = 1800  # 30 minutes (increased from 5 to handle rate limits better)
 
 def get_stock_info_from_fmp(ticker):
     """Fallback to FMP API when yfinance is rate limited"""
@@ -138,15 +138,21 @@ def get_stock_info_from_alpha_vantage(ticker: str) -> Optional[Dict[str, Any]]:
 
 def get_stock_info(ticker):
     """Get stock info with caching and FMP as primary source"""
-    # Check cache first
+    # Check cache first (including stale cache for rate limit tolerance)
     cache_key = ticker
     stale_entry = None
     if cache_key in stock_info_cache:
         cached_data, timestamp = stock_info_cache[cache_key]
+        # Return fresh cache
         if time.time() - timestamp < CACHE_TTL:
-            logger.info(f"Returning cached data for {ticker}")
+            logger.info(f"Returning cached data for {ticker} (age: {int(time.time() - timestamp)}s)")
             return cached_data
+        # Keep stale entry for fallback
         stale_entry = (cached_data, timestamp)
+        # If stale cache is less than 24 hours old, still return it for validation calls
+        if time.time() - timestamp < 86400:  # 24 hours
+            logger.info(f"Returning stale cache for {ticker} to avoid rate limits (age: {int((time.time() - timestamp)/3600)}h)")
+            return cached_data
 
     # Try FMP API first (more reliable, no rate limits with API key)
     logger.info(f"Fetching stock info for {ticker} from FMP API")
@@ -197,11 +203,21 @@ def get_stock_info(ticker):
         return result
 
     except Exception as e:
-        logger.error(f"FMP, Alpha Vantage, and yfinance failed for {ticker}: {e}")
-        if stale_entry:
-            logger.warning(f"Serving stale cached data for {ticker} due to upstream rate limits")
+        error_msg = str(e)
+        logger.error(f"FMP, Alpha Vantage, and yfinance failed for {ticker}: {error_msg}")
+
+        # If rate limited, always try to serve stale cache if available
+        if "rate limit" in error_msg.lower() or "too many requests" in error_msg.lower():
+            if stale_entry:
+                logger.warning(f"RATE LIMITED - Serving stale cached data for {ticker} (age: {int((time.time() - stale_entry[1])/3600)}h)")
+                # Update timestamp to extend cache life during rate limit period
+                stock_info_cache[cache_key] = (stale_entry[0], time.time())
+                return stale_entry[0]
+        elif stale_entry:
+            logger.warning(f"Serving stale cached data for {ticker} due to upstream failures")
             stock_info_cache[cache_key] = (stale_entry[0], time.time())
             return stale_entry[0]
+
         return None
 
 def serialize_report_progress(report: 'ReportProgress') -> Dict:
@@ -687,6 +703,8 @@ def real_report_generator_worker():
                 continue
             ticker = report.ticker
 
+            logger.info("Dequeued report for processing", extra={"report_id": report_id, "ticker": ticker})
+
             logger.info(f"Starting real report generation for {ticker} (ID: {report_id})")
 
             try:
@@ -703,6 +721,7 @@ def real_report_generator_worker():
                 logger.info(f"Fetching comprehensive data for {ticker}")
 
                 if data_orchestrator:
+                    logger.info("Calling DataOrchestrator.refresh_company_data", extra={"ticker": ticker})
                     company_dataset = data_orchestrator.refresh_company_data(ticker)
                 else:
                     # Simplified fallback - use basic yfinance data
@@ -910,11 +929,27 @@ def mock_report_generator_worker():
             logger.error(f"Error in mock report generator worker: {e}")
             time.sleep(5)
 
+_background_worker_running = False
+_background_worker_lock = threading.Lock()
+
 def start_background_worker():
-    """Start the background worker thread"""
-    worker_thread = threading.Thread(target=real_report_generator_worker, daemon=True)
-    worker_thread.start()
-    logger.info("Background real report generator worker started")
+    """Start the background worker thread (idempotent - only starts once)"""
+    global _background_worker_running
+
+    with _background_worker_lock:
+        if _background_worker_running:
+            logger.warning("Background worker already running - skipping duplicate start")
+            return False
+
+        worker_thread = threading.Thread(
+            target=real_report_generator_worker,
+            daemon=True,
+            name="ReportGeneratorWorker"
+        )
+        worker_thread.start()
+        _background_worker_running = True
+        logger.info(f"✅ Background report generator worker started (thread: {worker_thread.name})")
+        return True
 
 def _ensure_directories():
     reports_dir = project_root / 'reports'

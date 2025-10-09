@@ -4,7 +4,7 @@ services:
     env: python
     plan: starter
     buildCommand: pip install --upgrade pip && pip install --no-cache-dir -r requirements.txt
-    startCommand: gunicorn --workers 2 --threads 4 --bind 0.0.0.0:$PORT wsgi:app
+    startCommand: gunicorn --config gunicorn_config.py wsgi:app
     healthCheckPath: /health
     envVars:
       - key: PYTHON_VERSION
@@ -41,3 +41,15 @@ services:
         value: false
       - key: ERT_SECRET_KEY
         generateValue: true
+      - key: FMP_API_KEY
+        value: p7sp5jCKkOpy7wqr7L5GK2rM5D2IdTzw
+      - key: ALPHA_VANTAGE_API_KEY
+        value: Q4JQUU2KXA60C7CF
+      - key: POLYGON_API_KEY
+        value: hbHwrUsCwbKfBSMyZiFZnpyMTda0wDgC
+      - key: FINNHUB_API_KEY
+        value: d3fbrhhr01qolknci54gd3fbrhhr01qolknci550
+      - key: NEWSAPI_KEY
+        value: d6ae866f7e644e3c9e8c1d3a5b8e2395
+      - key: SEC_EDGAR_API_KEY
+        value: vasusangwan07@gmail.com
