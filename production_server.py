@@ -630,8 +630,8 @@ def api_generate():
     if not ticker:
         return jsonify({'error': 'Ticker symbol required'}), 400
 
-    # Basic ticker format validation (1-5 uppercase letters)
-    if not ticker.isalpha() or len(ticker) > 5:
+    # Basic ticker format validation (1-12 uppercase letters, allow single-letter tickers like 'T' for AT&T)
+    if not ticker.isalpha() or len(ticker) < 1 or len(ticker) > 12:
         return jsonify({'error': f'Invalid ticker format: {ticker}'}), 400
 
     # Try to validate ticker, but proceed anyway if validation fails (rate limits)
@@ -683,6 +683,26 @@ def api_reset_abort():
 def api_reports():
     """API endpoint for report history"""
     return jsonify(status_manager.get_recent_reports())
+
+@app.route('/reports/<path:filename>')
+def download_report(filename):
+    """Serve report files for download"""
+    try:
+        # Get the reports directory (works on both local and Render)
+        if 'RENDER' in os.environ:
+            reports_dir = Path('/opt/render/project/src/reports')
+        else:
+            reports_dir = Path(project_root) / 'reports'
+
+        # Security: ensure filename doesn't contain path traversal
+        filename = Path(filename).name
+
+        return send_from_directory(reports_dir, filename, as_attachment=True)
+    except FileNotFoundError:
+        return jsonify({'error': 'Report not found'}), 404
+    except Exception as e:
+        logger.error(f"Error serving report {filename}: {e}")
+        return jsonify({'error': str(e)}), 500
 
 @app.route('/health')
 def health():
@@ -895,22 +915,40 @@ def real_report_generator_worker():
                     current_section='Saving report...'
                 )
 
-                # Save report to file
+                # Save report to file (markdown, PDF, and Excel)
                 reports_dir = Path(project_root) / 'reports'
                 reports_dir.mkdir(exist_ok=True)
-                report_filename = f"{ticker}_{int(time.time())}.md"
-                report_path = reports_dir / report_filename
+                timestamp = int(time.time())
 
+                # Save markdown
+                report_filename = f"{ticker}_{timestamp}.md"
+                report_path = reports_dir / report_filename
                 with open(report_path, 'w') as f:
                     f.write(report_content)
-
                 logger.info(f"Report saved to {report_path}")
 
-                # Complete successfully
+                # Generate PDF from markdown
+                pdf_path = None
+                try:
+                    from src.export import convert_md_to_pdf
+                    pdf_path = reports_dir / f"{ticker}_{timestamp}.pdf"
+                    convert_md_to_pdf(str(report_path), str(pdf_path))
+                    logger.info(f"PDF generated: {pdf_path}")
+                except Exception as e:
+                    logger.warning(f"Failed to generate PDF: {e}")
+                    pdf_path = None
+
+                # TODO: Excel generation (disabled for now - focus on PDF quality first)
+                # Will add comprehensive Excel export with financial model in future update
+                excel_path = None
+
+                # Complete successfully (store only filenames, not full paths)
                 status_manager.complete_report(
                     report_id,
                     success=True,
-                    report_path=str(report_path)
+                    report_path=report_path.name if report_path else None,
+                    pdf_path=pdf_path.name if 'pdf_path' in locals() and pdf_path else None,
+                    excel_path=excel_path.name if 'excel_path' in locals() and excel_path else None
                 )
 
             except AbortSignal:

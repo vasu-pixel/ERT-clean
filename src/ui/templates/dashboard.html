@@ -523,7 +523,16 @@ return `
                             ${report.report_metadata?.estimated_pages ? `<span>${report.report_metadata.estimated_pages} pages</span>` : ''}
                         </div>
                         <div class="mt-4 flex items-center gap-3">
-                            ${report.report_path ? `<button class="text-xs font-semibold text-primary dark:text-dark-primary hover:underline" onclick="downloadReport('${report.report_path}')">Download</button>` : ''}
+                            ${report.report_path ? `
+                                <button class="text-xs font-semibold text-primary dark:text-dark-primary hover:underline flex items-center gap-1" onclick="downloadReport('${report.report_path}')">
+                                    <span>📄</span> Markdown
+                                </button>
+                            ` : ''}
+                            ${report.pdf_path ? `
+                                <button class="text-xs font-semibold text-primary dark:text-dark-primary hover:underline flex items-center gap-1" onclick="downloadReport('${report.pdf_path}')">
+                                    <span>📕</span> PDF
+                                </button>
+                            ` : ''}
                             <button class="text-xs font-semibold text-primary dark:text-dark-primary hover:underline" onclick="showReportDetails('${report.report_id || report.ticker}')">Details</button>
                         </div>
                     </div>
@@ -946,7 +955,13 @@ return `
                             <div><span class="font-semibold">Completed:</span> ${new Date(report.completion_time || report.start_time).toLocaleString()}</div>
                             ${report.word_count ? `<div><span class="font-semibold">Word Count:</span> ${report.word_count}</div>` : ''}
                             ${meta.estimated_pages ? `<div><span class="font-semibold">Estimated Pages:</span> ${meta.estimated_pages}</div>` : ''}
-                            ${report.report_path ? `<div><span class="font-semibold">File:</span> ${report.report_path}</div>` : ''}
+                            ${report.report_path || report.pdf_path ? `
+                                <div><span class="font-semibold">Files:</span>
+                                    ${report.report_path ? `<a href="/reports/${report.report_path}" class="text-primary dark:text-dark-primary hover:underline" target="_blank">📄 ${report.report_path}</a>` : ''}
+                                    ${report.report_path && report.pdf_path ? ' • ' : ''}
+                                    ${report.pdf_path ? `<a href="/reports/${report.pdf_path}" class="text-primary dark:text-dark-primary hover:underline" target="_blank">📕 ${report.pdf_path}</a>` : ''}
+                                </div>
+                            ` : ''}
                         </div>
                         ${sections.length ? `
                             <div class="mt-4">
