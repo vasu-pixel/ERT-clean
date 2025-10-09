@@ -171,31 +171,48 @@ class DataOrchestrator:
             logger.warning(f"No peers found for {ticker}, using empty peer list")
             return [], []
 
-        peers: List[Dict[str, Optional[float]]] = []
-        for peer in peer_candidates:
+        # Parallelize peer fetching for better performance
+        from concurrent.futures import ThreadPoolExecutor, as_completed
+
+        def fetch_peer_data(peer: str) -> Optional[Dict[str, Optional[float]]]:
+            """Fetch fundamentals for a single peer"""
             if peer.upper() == ticker.upper():
-                continue
+                return None
             try:
                 fundamentals = get_fundamentals(peer)
                 if not fundamentals:
-                    continue
-                peers.append(
-                    {
-                        "ticker": peer,
-                        "market_cap": fundamentals.get("market_cap"),
-                        "enterprise_value": fundamentals.get("enterpriseValue"),
-                        "revenue_growth": fundamentals.get("revenueGrowth"),
-                        "ebitda_margin": fundamentals.get("ebitdaMargins"),
-                        "trailing_pe": fundamentals.get("trailingPE"),
-                        "forward_pe": fundamentals.get("forwardPE"),
-                        "enterprise_to_ebitda": fundamentals.get("enterpriseToEbitda"),
-                        "free_cash_flow": fundamentals.get("freeCashflow"),
-                    }
-                )
+                    return None
+                return {
+                    "ticker": peer,
+                    "market_cap": fundamentals.get("market_cap"),
+                    "enterprise_value": fundamentals.get("enterpriseValue"),
+                    "revenue_growth": fundamentals.get("revenueGrowth"),
+                    "ebitda_margin": fundamentals.get("ebitdaMargins"),
+                    "trailing_pe": fundamentals.get("trailingPE"),
+                    "forward_pe": fundamentals.get("forwardPE"),
+                    "enterprise_to_ebitda": fundamentals.get("enterpriseToEbitda"),
+                    "free_cash_flow": fundamentals.get("freeCashflow"),
+                }
             except Exception as exc:
                 logger.debug("Failed to fetch peer metrics for %s: %s", peer, exc)
-            if len(peers) >= limit:
-                break
+                return None
+
+        peers: List[Dict[str, Optional[float]]] = []
+
+        # Fetch peers in parallel (max 5 concurrent requests)
+        with ThreadPoolExecutor(max_workers=5) as executor:
+            future_to_peer = {executor.submit(fetch_peer_data, peer): peer for peer in peer_candidates[:limit * 2]}
+
+            for future in as_completed(future_to_peer):
+                if len(peers) >= limit:
+                    break
+                try:
+                    peer_data = future.result()
+                    if peer_data:
+                        peers.append(peer_data)
+                except Exception as exc:
+                    peer_ticker = future_to_peer[future]
+                    logger.debug("Failed to process peer %s: %s", peer_ticker, exc)
 
         if not peers:
             logger.warning(f"Unable to assemble peer metrics for {ticker}, returning empty peer list")
@@ -246,13 +263,13 @@ class DataOrchestrator:
                 logger.info(f"Fetching peers for {ticker} from Polygon.io")
                 client = RESTClient(polygon_key)
 
-                # Use related-companies endpoint
+                # Use related-companies endpoint (returns list of RelatedCompany objects)
                 related = client.get_related_companies(ticker)
 
-                if related and hasattr(related, 'results'):
-                    peers = [r.ticker for r in related.results if hasattr(r, 'ticker')]
+                if related and isinstance(related, list):
+                    peers = [r.ticker for r in related if hasattr(r, 'ticker')]
                     if peers:
-                        logger.info(f"Found {len(peers)} peers for {ticker} from Polygon.io")
+                        logger.info(f"Found {len(peers)} peers for {ticker} from Polygon.io: {peers[:5]}")
                         return [p.upper() for p in peers if isinstance(p, str) and p.strip()]
             except Exception as exc:
                 logger.warning(f"Polygon.io peer lookup failed for {ticker}: {exc}, trying FMP")

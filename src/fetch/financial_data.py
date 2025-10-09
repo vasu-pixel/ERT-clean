@@ -123,12 +123,22 @@ def get_fundamentals(ticker: str) -> Dict[str, object]:
             # Merge Polygon data with yfinance format for compatibility
             fundamentals = _merge_polygon_data(polygon_data, ticker)
 
-            # Validate we got good data
-            if fundamentals.get("totalRevenue") and fundamentals.get("totalRevenue") > 0:
-                logger.info(f"Successfully fetched {ticker} from Polygon.io")
+            # Validate we got critical fields for accurate analysis
+            required_fields = {
+                "totalRevenue": fundamentals.get("totalRevenue"),
+                "market_cap": fundamentals.get("market_cap"),
+                "current_price": fundamentals.get("current_price"),
+                "name": fundamentals.get("name")
+            }
+
+            missing_fields = [field for field, value in required_fields.items()
+                            if value is None or (isinstance(value, (int, float)) and value <= 0)]
+
+            if not missing_fields:
+                logger.info(f"Successfully fetched {ticker} from Polygon.io with all critical fields")
                 return fundamentals
             else:
-                logger.warning(f"Polygon.io data incomplete for {ticker}, falling back to yfinance")
+                logger.warning(f"Polygon.io data incomplete for {ticker} (missing: {missing_fields}), falling back to yfinance")
         except Exception as exc:
             logger.warning(f"Polygon.io failed for {ticker}: {exc}, falling back to yfinance")
 
@@ -247,10 +257,36 @@ def _merge_polygon_data(polygon_data: Dict, ticker: str) -> Dict[str, object]:
         if price and merged["trailingEps"] and merged["trailingEps"] > 0:
             merged["trailingPE"] = price / merged["trailingEps"]
 
-    # Enterprise value approximation
+    # Enterprise value calculation with actual cash data
     if merged.get("market_cap") and bal.get("liabilities"):
-        cash = bal.get("current_assets", 0) * 0.3  # Rough estimate of cash
-        merged["enterpriseValue"] = merged["market_cap"] + bal.get("liabilities", 0) - cash
+        # Try to get actual cash from yfinance (more reliable than Polygon)
+        actual_cash = None
+        try:
+            import yfinance as yf
+            ticker_obj = yf.Ticker(ticker)
+            balance_sheet = ticker_obj.balance_sheet
+
+            if balance_sheet is not None and not balance_sheet.empty:
+                # Try multiple field names for cash
+                for cash_field in ['Cash And Cash Equivalents', 'Cash Cash Equivalents And Short Term Investments',
+                                  'cashAndCashEquivalents', 'cash_and_cash_equivalents']:
+                    if cash_field in balance_sheet.index:
+                        actual_cash = balance_sheet.loc[cash_field].iloc[0]
+                        if actual_cash and actual_cash > 0:
+                            logger.info(f"Using actual cash from yfinance for {ticker}: ${actual_cash:,.0f}")
+                            break
+        except Exception as e:
+            logger.debug(f"Could not fetch cash from yfinance for {ticker}: {e}")
+
+        # Fallback to estimation if yfinance fails
+        if actual_cash is None or actual_cash <= 0:
+            actual_cash = bal.get("current_assets", 0) * 0.3
+            logger.debug(f"Using estimated cash (30% of current assets) for {ticker}: ${actual_cash:,.0f}")
+
+        # Calculate total debt (long-term debt + current liabilities)
+        total_debt = bal.get("liabilities", 0)
+
+        merged["enterpriseValue"] = merged["market_cap"] + total_debt - actual_cash
 
         # EV/Revenue
         if revenue and revenue > 0:
