@@ -1,8 +1,13 @@
 #!/usr/bin/env python3
 # production_server.py - Full-featured production server for Render
 
-# NOTE: Eventlet monkey-patching handled by gunicorn_config.py when using Gunicorn
-# For standalone execution, monkey-patch is done in __main__ block at bottom
+# NOTE: gevent monkey-patching for async compatibility
+# Must be done BEFORE any other imports when using gevent worker
+try:
+    from gevent import monkey
+    monkey.patch_all()
+except ImportError:
+    pass  # gevent not installed, continue without patching
 
 import os
 import sys
@@ -955,11 +960,22 @@ def start_background_worker():
             logger.warning("Background worker already running - skipping duplicate start")
             return False
 
-        # Use eventlet.spawn instead of threading.Thread for eventlet compatibility
-        import eventlet
-        greenthread = eventlet.spawn(real_report_generator_worker)
+        # Use gevent.spawn for async compatibility
+        try:
+            import gevent
+            greenlet = gevent.spawn(real_report_generator_worker)
+            logger.info(f"✅ Background report generator worker started (gevent greenlet: {greenlet})")
+        except ImportError:
+            # Fallback to threading if gevent not available
+            worker_thread = threading.Thread(
+                target=real_report_generator_worker,
+                daemon=True,
+                name="ReportGeneratorWorker"
+            )
+            worker_thread.start()
+            logger.info(f"✅ Background report generator worker started (thread: {worker_thread.name})")
+
         _background_worker_running = True
-        logger.info(f"✅ Background report generator worker started (greenthread: {greenthread})")
         return True
 
 def _ensure_directories():
@@ -973,10 +989,6 @@ def _ensure_directories():
     static_dir.mkdir(parents=True, exist_ok=True)
 
 if __name__ == '__main__':
-    # Monkey-patch for standalone execution (not needed when using Gunicorn)
-    import eventlet
-    eventlet.monkey_patch()
-
     # Ensure directories exist
     _ensure_directories()
 
