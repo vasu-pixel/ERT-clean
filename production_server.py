@@ -52,8 +52,8 @@ def get_stock_info_from_fmp(ticker):
 
     try:
         import requests
-        # Get quote
-        quote_url = f"https://financialmodelingprep.com/api/v3/quote/{ticker}?apikey={fmp_api_key}"
+        # Use v4 endpoint (v3/quote is legacy and deprecated as of Aug 2025)
+        quote_url = f"https://financialmodelingprep.com/api/v4/quote/{ticker}?apikey={fmp_api_key}"
         logger.info(f"FMP API request: {quote_url[:80]}...")  # Log URL (truncate API key)
         response = requests.get(quote_url, timeout=5)
 
@@ -970,14 +970,11 @@ def start_background_worker():
             logger.warning("Background worker already running - skipping duplicate start")
             return False
 
-        worker_thread = threading.Thread(
-            target=real_report_generator_worker,
-            daemon=True,
-            name="ReportGeneratorWorker"
-        )
-        worker_thread.start()
+        # Use eventlet.spawn instead of threading.Thread for eventlet compatibility
+        import eventlet
+        greenthread = eventlet.spawn(real_report_generator_worker)
         _background_worker_running = True
-        logger.info(f"✅ Background report generator worker started (thread: {worker_thread.name})")
+        logger.info(f"✅ Background report generator worker started (greenthread: {greenthread})")
         return True
 
 def _ensure_directories():
