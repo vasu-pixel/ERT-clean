@@ -19,6 +19,38 @@ except ImportError:
     POLYGON_AVAILABLE = False
     logger.warning("Polygon.io integration not available")
 
+# Map Polygon SIC descriptions to standard sectors for peer matching
+SIC_TO_SECTOR_MAP = {
+    "ELECTRONIC COMPUTERS": "Technology",
+    "COMPUTER PROGRAMMING SERVICES": "Technology",
+    "COMPUTER INTEGRATED SYSTEMS DESIGN": "Technology",
+    "SEMICONDUCTORS & RELATED DEVICES": "Technology",
+    "TELEPHONE COMMUNICATIONS": "Communication Services",
+    "CABLE & OTHER PAY TELEVISION SERVICES": "Communication Services",
+    "PHARMACEUTICAL PREPARATIONS": "Healthcare",
+    "BIOLOGICAL PRODUCTS": "Healthcare",
+    "MEDICAL DEVICES": "Healthcare",
+    "RETAIL-DRUG STORES AND PROPRIETARY STORES": "Healthcare",
+    "HOSPITAL & MEDICAL SERVICE PLANS": "Healthcare",
+    "CRUDE PETROLEUM & NATURAL GAS": "Energy",
+    "PETROLEUM REFINING": "Energy",
+    "NATIONAL COMMERCIAL BANKS": "Financial Services",
+    "SAVINGS INSTITUTION": "Financial Services",
+    "SECURITY BROKERS & DEALERS": "Financial Services",
+    "INSURANCE CARRIERS": "Financial Services",
+    "MOTOR VEHICLES & PASSENGER CAR BODIES": "Consumer Cyclical",
+    "RETAIL-EATING PLACES": "Consumer Cyclical",
+    "RETAIL-APPAREL & ACCESSORY STORES": "Consumer Cyclical",
+    "RETAIL-VARIETY STORES": "Consumer Defensive",
+    "RETAIL-GROCERY STORES": "Consumer Defensive",
+    "BEVERAGES": "Consumer Defensive",
+    "AIRCRAFT": "Industrials",
+    "INDUSTRIAL MACHINERY & EQUIPMENT": "Industrials",
+    "ELECTRIC SERVICES": "Utilities",
+    "NATURAL GAS TRANSMISSION": "Utilities",
+    "REAL ESTATE INVESTMENT TRUSTS": "Real Estate",
+}
+
 KEY_FIELDS = {
     "name": "longName",
     "summary": "longBusinessSummary",
@@ -138,13 +170,17 @@ def _merge_polygon_data(polygon_data: Dict, ticker: str) -> Dict[str, object]:
     bal = latest_fin.get("balance_sheet", {}) if latest_fin else {}
     cf = latest_fin.get("cash_flow", {}) if latest_fin else {}
 
+    # Map SIC description to standard sector for peer matching
+    sic_desc = details.get("sic_description", "")
+    mapped_sector = SIC_TO_SECTOR_MAP.get(sic_desc, sic_desc)  # Use mapped sector or original
+
     # Map to ERT/yfinance compatible format
     merged = {
         # Company info
         "name": details.get("name"),
         "summary": details.get("description"),
-        "sector": details.get("sic_description"),  # Approximate - Polygon doesn't have direct sector
-        "industry": details.get("sic_description"),
+        "sector": mapped_sector,  # Use mapped sector for peer matching
+        "industry": sic_desc,  # Keep SIC as industry
         "currency": details.get("currency_name"),
 
         # Market data

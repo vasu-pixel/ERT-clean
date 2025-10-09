@@ -163,7 +163,7 @@ class DataOrchestrator:
             try:
                 peer_candidates = self._fetch_peer_candidates(ticker, sector)
             except ValueError as e:
-                logger.warning(f"FMP peer lookup failed: {e}, using fallback peer list")
+                logger.warning(f"Peer lookup failed: {e}, using fallback peer list")
                 # Fallback to common peers by sector
                 peer_candidates = self._get_fallback_peers(ticker, sector)
 
@@ -204,9 +204,10 @@ class DataOrchestrator:
         return peers, peer_candidates
 
     def _get_fallback_peers(self, ticker: str, sector: str) -> List[str]:
-        """Fallback peer list when FMP API is unavailable"""
-        # Common peers by sector
+        """Fallback peer list when API is unavailable"""
+        # Common peers by sector (including Polygon SIC descriptions)
         fallback_map = {
+            # Standard sectors
             "Technology": ["AAPL", "MSFT", "GOOGL", "META", "NVDA", "TSLA", "AMZN"],
             "Healthcare": ["UNH", "JNJ", "PFE", "ABBV", "TMO", "CVS", "CI"],
             "Consumer Cyclical": ["AMZN", "TSLA", "HD", "NKE", "MCD", "SBUX", "TGT"],
@@ -217,15 +218,46 @@ class DataOrchestrator:
             "Energy": ["XOM", "CVX", "COP", "SLB", "EOG", "PSX"],
             "Real Estate": ["AMT", "PLD", "CCI", "EQIX", "SPG", "O"],
             "Basic Materials": ["LIN", "APD", "SHW", "NEM", "FCX", "DOW"],
-            "Utilities": ["NEE", "DUK", "SO", "D", "AEP", "EXC"]
+            "Utilities": ["NEE", "DUK", "SO", "D", "AEP", "EXC"],
+
+            # Polygon SIC description mappings
+            "ELECTRONIC COMPUTERS": ["MSFT", "DELL", "HPQ", "ORCL", "IBM", "AAPL"],
+            "PHARMACEUTICAL PREPARATIONS": ["PFE", "JNJ", "MRK", "LLY", "ABBV"],
+            "CRUDE PETROLEUM & NATURAL GAS": ["XOM", "CVX", "COP", "EOG", "OXY"],
+            "NATIONAL COMMERCIAL BANKS": ["JPM", "BAC", "WFC", "C", "USB"],
+            "MOTOR VEHICLES & PASSENGER CAR BODIES": ["F", "GM", "TSLA", "RIVN"],
+            "RETAIL-DRUG STORES AND PROPRIETARY STORES": ["CVS", "WBA", "RITE"],
         }
 
+        # Default to large-cap diversified stocks (NEVER use ETFs like SPY)
+        default_peers = ["AAPL", "MSFT", "GOOGL", "JPM", "JNJ"]
+
         # Get peers for sector, excluding the ticker itself
-        peers = fallback_map.get(sector, ["SPY"])  # Default to SPY if sector unknown
+        peers = fallback_map.get(sector, default_peers)
         logger.info(f"Using fallback peers for {ticker} in {sector}: {peers[:5]}")
         return [p for p in peers if p.upper() != ticker.upper()][:5]
 
     def _fetch_peer_candidates(self, ticker: str, sector: str) -> List[str]:
+        # Try Polygon.io first (Starter plan - unlimited requests)
+        polygon_key = os.getenv("POLYGON_API_KEY")
+        if polygon_key:
+            try:
+                from polygon import RESTClient
+                logger.info(f"Fetching peers for {ticker} from Polygon.io")
+                client = RESTClient(polygon_key)
+
+                # Use related-companies endpoint
+                related = client.get_related_companies(ticker)
+
+                if related and hasattr(related, 'results'):
+                    peers = [r.ticker for r in related.results if hasattr(r, 'ticker')]
+                    if peers:
+                        logger.info(f"Found {len(peers)} peers for {ticker} from Polygon.io")
+                        return [p.upper() for p in peers if isinstance(p, str) and p.strip()]
+            except Exception as exc:
+                logger.warning(f"Polygon.io peer lookup failed for {ticker}: {exc}, trying FMP")
+
+        # Fallback to FMP
         api_key = os.getenv("FMP_API_KEY")
         if not api_key:
             logger.error("FMP_API_KEY missing from environment; cannot perform live peer lookup.")
