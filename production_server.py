@@ -140,11 +140,13 @@ def get_stock_info(ticker):
     """Get stock info with caching and FMP as primary source"""
     # Check cache first
     cache_key = ticker
+    stale_entry = None
     if cache_key in stock_info_cache:
         cached_data, timestamp = stock_info_cache[cache_key]
         if time.time() - timestamp < CACHE_TTL:
             logger.info(f"Returning cached data for {ticker}")
             return cached_data
+        stale_entry = (cached_data, timestamp)
 
     # Try FMP API first (more reliable, no rate limits with API key)
     logger.info(f"Fetching stock info for {ticker} from FMP API")
@@ -196,6 +198,10 @@ def get_stock_info(ticker):
 
     except Exception as e:
         logger.error(f"FMP, Alpha Vantage, and yfinance failed for {ticker}: {e}")
+        if stale_entry:
+            logger.warning(f"Serving stale cached data for {ticker} due to upstream rate limits")
+            stock_info_cache[cache_key] = (stale_entry[0], time.time())
+            return stale_entry[0]
         return None
 
 def serialize_report_progress(report: 'ReportProgress') -> Dict:
