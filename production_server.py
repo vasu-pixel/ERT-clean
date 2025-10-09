@@ -310,6 +310,14 @@ class ReportStatusManager:
                        current_section: str = None, error_message: str = None,
                        word_count: int = None, report_path: str = None):
         """Update progress for a specific report"""
+        logger.info(
+            "update_progress report_id=%s status=%s progress=%s section=%s",
+            report_id,
+            status,
+            progress,
+            current_section,
+        )
+
         with self._lock:
             report = self.active_reports.get(report_id)
             if not report:
@@ -428,6 +436,7 @@ class ReportStatusManager:
         with self._lock:
             report = self.active_reports.get(report_id)
             if not report:
+                logger.info("complete_report called for missing report_id=%s", report_id)
                 return
 
             if success:
@@ -454,6 +463,13 @@ class ReportStatusManager:
             self.completed_reports.append(completed_data)
             if report_id in self.active_reports:
                 del self.active_reports[report_id]
+
+        logger.info(
+            "complete_report report_id=%s success=%s path=%s",
+            report_id,
+            success,
+            report_path,
+        )
 
         # Check if we can reset abort state
         if self.abort_active:
@@ -819,8 +835,10 @@ def real_report_generator_worker():
         except queue.Empty:
             continue
         except Exception as e:
-            logger.error(f"Error in report generator worker: {e}")
+            logger.exception(f"Error in report generator worker: {e}")
             time.sleep(5)
+        except Exception as exc:  # should be unreachable
+            logger.exception(f"Unhandled error in real report generator worker: {exc}")
 
 def mock_report_generator_worker():
     """Mock background worker for demo purposes (fallback)"""
