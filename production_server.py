@@ -151,8 +151,53 @@ def get_stock_info_from_alpha_vantage(ticker: str) -> Optional[Dict[str, Any]]:
         logger.error(f"Alpha Vantage API error for {ticker}: {exc}")
         return None
 
+def get_stock_info_from_polygon(ticker):
+    """Get stock info from Polygon.io (primary source)"""
+    try:
+        from polygon import RESTClient
+        api_key = os.getenv("POLYGON_API_KEY")
+        if not api_key:
+            return None
+
+        logger.info(f"Fetching stock info for {ticker} from Polygon.io")
+        client = RESTClient(api_key)
+
+        # Get ticker details
+        details = client.get_ticker_details(ticker)
+
+        # Get previous close for price data
+        prev_close_list = client.get_previous_close_agg(ticker)
+        prev_close = prev_close_list[0] if prev_close_list else None
+
+        if not details or not prev_close:
+            logger.warning(f"Incomplete Polygon data for {ticker}")
+            return None
+
+        current_price = getattr(prev_close, 'close', None)
+        prev_price = getattr(prev_close, 'open', None)
+        price_change = current_price - prev_price if current_price and prev_price else 0
+        percent_change = (price_change / prev_price) * 100 if prev_price else 0
+
+        result = {
+            'ticker': ticker,
+            'name': getattr(details, 'name', None),
+            'price': current_price,
+            'price_change': price_change,
+            'percent_change': percent_change,
+            'market_cap': getattr(details, 'market_cap', None),
+            'sector': getattr(details, 'sic_description', None),
+        }
+
+        logger.info(f"✓ Polygon.io validation successful for {ticker}")
+        return result
+
+    except Exception as e:
+        logger.warning(f"Polygon.io validation failed for {ticker}: {e}")
+        return None
+
+
 def get_stock_info(ticker):
-    """Get stock info with caching and FMP as primary source"""
+    """Get stock info with caching - tries Polygon.io first, then yfinance"""
     # Check cache first (including stale cache for rate limit tolerance)
     cache_key = ticker
     stale_entry = None
@@ -169,13 +214,19 @@ def get_stock_info(ticker):
             logger.info(f"Returning stale cache for {ticker} to avoid rate limits (age: {int((time.time() - timestamp)/3600)}h)")
             return cached_data
 
-    # Try yfinance first (free, no API key needed)
+    # Try Polygon.io first (Starter plan - unlimited requests)
+    polygon_result = get_stock_info_from_polygon(ticker)
+    if polygon_result:
+        stock_info_cache[cache_key] = (polygon_result, time.time())
+        return polygon_result
+
+    # Fallback to yfinance
     if not YFINANCE_AVAILABLE:
-        logger.warning("yfinance not available")
+        logger.warning("yfinance not available and Polygon failed")
         return None
 
     try:
-        logger.info(f"Fetching stock info for {ticker} from yfinance")
+        logger.info(f"Fetching stock info for {ticker} from yfinance (Polygon fallback)")
         start_time = time.time()
         stock = yf.Ticker(ticker)
         info = stock.info
