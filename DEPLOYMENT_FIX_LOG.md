@@ -39,13 +39,13 @@
 
 ```python
 workers = 1  # Critical: Only 1 worker for background thread persistence
-worker_class = 'gthread'
-threads = 4
+worker_class = 'eventlet'  # SocketIO WebSocket compatibility
+worker_connections = 1000  # Greenlet concurrency
 timeout = 120
 max_requests = 1000
 ```
 
-**Why:** Single worker prevents thread loss during worker restarts. Threads handle concurrency.
+**Why:** Single worker prevents thread loss during worker restarts. Eventlet provides WebSocket support for real-time updates.
 
 ### ✅ Fix 2: Gunicorn Lifecycle Hooks
 **File:** `wsgi.py`
