@@ -13,6 +13,7 @@ from dataclasses import dataclass, asdict
 from flask import Flask, render_template, jsonify, request, send_from_directory
 from flask_socketio import SocketIO, emit
 import queue
+from threading import RLock
 
 # Add project root to path
 project_root = Path(__file__).parent
@@ -66,6 +67,24 @@ def get_stock_info_from_fmp(ticker):
 
     return None
 
+def _call_alpha_vantage_with_retry(url: str, max_retries: int = 3, timeout: int = 10) -> Optional[Dict[str, Any]]:
+    import requests
+    backoff = 2
+    for attempt in range(max_retries):
+        try:
+            response = requests.get(url, timeout=timeout)
+            response.raise_for_status()
+            return response.json() or {}
+        except Exception as exc:
+            if attempt == max_retries - 1:
+                logger.error(f"Alpha Vantage request failed after {max_retries} attempts: {exc}")
+                return None
+            sleep_time = backoff * (attempt + 1)
+            logger.warning(f"Alpha Vantage request failed (attempt {attempt + 1}): {exc}; retrying in {sleep_time}s")
+            time.sleep(sleep_time)
+    return None
+
+
 def get_stock_info_from_alpha_vantage(ticker: str) -> Optional[Dict[str, Any]]:
     """Secondary fallback using Alpha Vantage GLOBAL_QUOTE endpoint."""
     alpha_api_key = os.getenv('ALPHA_VANTAGE_API_KEY')
@@ -73,15 +92,13 @@ def get_stock_info_from_alpha_vantage(ticker: str) -> Optional[Dict[str, Any]]:
         return None
 
     try:
-        import requests
-
         quote_url = (
             "https://www.alphavantage.co/query?function=GLOBAL_QUOTE"
             f"&symbol={ticker}&apikey={alpha_api_key}"
         )
-        response = requests.get(quote_url, timeout=5)
-        response.raise_for_status()
-        data = response.json() or {}
+        data = _call_alpha_vantage_with_retry(quote_url)
+        if data is None:
+            return None
         quote = data.get("Global Quote") or {}
         if not quote:
             logger.warning(f"Alpha Vantage returned no quote for {ticker}")
@@ -96,9 +113,15 @@ def get_stock_info_from_alpha_vantage(ticker: str) -> Optional[Dict[str, Any]]:
         price = _safe_float(quote.get("05. price"))
         previous_close = _safe_float(quote.get("08. previous close"))
         price_change = _safe_float(quote.get("09. change"))
-        percent_change = _safe_float(quote.get("10. change percent"))
-        if percent_change is not None:
-            percent_change = percent_change if percent_change <= 1 else percent_change  # already percent string
+        percent_change_raw = quote.get("10. change percent")
+        percent_change = None
+        if isinstance(percent_change_raw, str) and percent_change_raw.endswith('%'):
+            try:
+                percent_change = float(percent_change_raw.strip('%'))
+            except ValueError:
+                percent_change = None
+        else:
+            percent_change = _safe_float(percent_change_raw)
 
         return {
             'ticker': ticker,
@@ -215,11 +238,17 @@ class ReportStatusManager:
         self.abort_event = threading.Event()
         self.abort_lock = threading.Lock()
         self.abort_active = False
+        self._lock = RLock()
         self.update_system_status()
 
     def set_socketio(self, socketio):
         """Set SocketIO instance for real-time updates"""
         self.socketio = socketio
+
+    def get_report(self, report_id: str) -> Optional[ReportProgress]:
+        """Thread-safe access to a report."""
+        with self._lock:
+            return self.active_reports.get(report_id)
 
     def update_system_status(self):
         """Update system status information"""
@@ -233,7 +262,8 @@ class ReportStatusManager:
                     'real_time_updates': True
                 }
             }
-            self.system_status['active_reports'] = len(self.active_reports)
+            with self._lock:
+                self.system_status['active_reports'] = len(self.active_reports)
             self.system_status['queue_size'] = self.report_queue.qsize()
         except Exception as e:
             logger.error(f"Error updating system status: {e}")
@@ -256,7 +286,8 @@ class ReportStatusManager:
             estimated_completion=datetime.now() + timedelta(minutes=5)
         )
 
-        self.active_reports[report_id] = progress
+        with self._lock:
+            self.active_reports[report_id] = progress
         self.report_queue.put(report_id)
 
         # Emit update to connected clients
@@ -273,29 +304,28 @@ class ReportStatusManager:
                        current_section: str = None, error_message: str = None,
                        word_count: int = None, report_path: str = None):
         """Update progress for a specific report"""
-        if report_id not in self.active_reports:
-            return
+        with self._lock:
+            report = self.active_reports.get(report_id)
+            if not report:
+                return
 
-        report = self.active_reports[report_id]
+            if status:
+                report.status = status
+            if progress is not None:
+                report.progress = progress
+            if current_section:
+                report.current_section = current_section
+            if error_message:
+                report.error_message = error_message
+            if word_count:
+                report.word_count = word_count
+            if report_path:
+                report.report_path = report_path
 
-        if status:
-            report.status = status
-        if progress is not None:
-            report.progress = progress
-        if current_section:
-            report.current_section = current_section
-        if error_message:
-            report.error_message = error_message
-        if word_count:
-            report.word_count = word_count
-        if report_path:
-            report.report_path = report_path
-
-        # Update estimated completion based on progress
-        if progress and progress > 10:
-            elapsed = datetime.now() - report.start_time
-            estimated_total = elapsed * (100 / progress)
-            report.estimated_completion = report.start_time + estimated_total
+            if progress and progress > 10:
+                elapsed = datetime.now() - report.start_time
+                estimated_total = elapsed * (100 / progress)
+                report.estimated_completion = report.start_time + estimated_total
 
         # Emit update to connected clients
         if self.socketio:
@@ -328,8 +358,9 @@ class ReportStatusManager:
 
         # Mark queued reports as aborted
         for report_id in pending_ids:
-            if report_id in self.active_reports:
-                report = self.active_reports[report_id]
+            with self._lock:
+                report = self.active_reports.get(report_id)
+            if report:
                 report.abort_requested = True
                 report.status = 'aborted'
                 report.progress = 0
@@ -337,7 +368,10 @@ class ReportStatusManager:
                 report.error_message = 'Aborted before start'
                 self.complete_report(report_id, success=False)
 
-        for report_id, report in list(self.active_reports.items()):
+        with self._lock:
+            active_snapshot = list(self.active_reports.items())
+
+        for report_id, report in active_snapshot:
             if getattr(report, 'abort_requested', False):
                 continue
             if report.status in ('completed', 'failed', 'aborted'):
@@ -372,7 +406,9 @@ class ReportStatusManager:
         """Reset abort state after all reports are cleaned up"""
         with self.abort_lock:
             # Only reset if no active reports remain
-            if len(self.active_reports) == 0:
+            with self._lock:
+                no_active = len(self.active_reports) == 0
+            if no_active:
                 self.abort_active = False
                 self.abort_event.clear()
                 logger.info("Abort state reset - system ready for new reports")
@@ -383,41 +419,42 @@ class ReportStatusManager:
 
     def complete_report(self, report_id: str, success: bool = True, report_path: str = None, metadata: Optional[Dict] = None):
         """Mark a report as completed"""
-        if report_id not in self.active_reports:
-            return
+        with self._lock:
+            report = self.active_reports.get(report_id)
+            if not report:
+                return
 
-        report = self.active_reports[report_id]
+            if success:
+                report.status = 'completed'
+                report.progress = 100
+                report.current_section = 'Report completed successfully'
+                if report_path:
+                    report.report_path = report_path
+            else:
+                if report.status != 'aborted':
+                    report.status = 'failed'
+                    report.current_section = 'Report generation failed'
 
-        if success:
-            report.status = 'completed'
-            report.progress = 100
-            report.current_section = 'Report completed successfully'
-            if report_path:
-                report.report_path = report_path
-        else:
-            if report.status != 'aborted':
-                report.status = 'failed'
-                report.current_section = 'Report generation failed'
+            completed_data = asdict(report)
+            if 'start_time' in completed_data and isinstance(report.start_time, datetime):
+                completed_data['start_time'] = report.start_time.isoformat()
+            if 'estimated_completion' in completed_data and report.estimated_completion and isinstance(report.estimated_completion, datetime):
+                completed_data['estimated_completion'] = report.estimated_completion.isoformat()
+            completed_data['completion_time'] = datetime.now().isoformat()
+            if metadata:
+                completed_data['report_metadata'] = metadata
+            completed_data['report_id'] = report_id
 
-        # Move to completed reports
-        completed_data = asdict(report)
-        # Convert datetime objects to ISO strings for JSON serialization
-        if 'start_time' in completed_data and isinstance(report.start_time, datetime):
-            completed_data['start_time'] = report.start_time.isoformat()
-        if 'estimated_completion' in completed_data and report.estimated_completion and isinstance(report.estimated_completion, datetime):
-            completed_data['estimated_completion'] = report.estimated_completion.isoformat()
-        completed_data['completion_time'] = datetime.now().isoformat()
-        if metadata:
-            completed_data['report_metadata'] = metadata
-        completed_data['report_id'] = report_id
-        self.completed_reports.append(completed_data)
-
-        # Remove from active reports
-        del self.active_reports[report_id]
+            self.completed_reports.append(completed_data)
+            if report_id in self.active_reports:
+                del self.active_reports[report_id]
 
         # Check if we can reset abort state
-        if self.abort_active and len(self.active_reports) == 0:
-            self.reset_abort_state()
+        if self.abort_active:
+            with self._lock:
+                no_active = len(self.active_reports) == 0
+            if no_active:
+                self.reset_abort_state()
 
         # Emit completion update
         if self.socketio:
@@ -431,8 +468,9 @@ class ReportStatusManager:
 
     def get_recent_reports(self, limit: int = 20) -> List[Dict]:
         """Get recent completed reports"""
-        return sorted(self.completed_reports,
-                     key=lambda x: x['start_time'], reverse=True)[:limit]
+        with self._lock:
+            snapshot = list(self.completed_reports)
+        return sorted(snapshot, key=lambda x: x['start_time'], reverse=True)[:limit]
 
     def get_status_summary(self) -> Dict:
         """Get overall status summary"""
@@ -440,9 +478,10 @@ class ReportStatusManager:
 
         # Convert active reports to JSON-serializable format
         active_reports_json = {}
-        for k, v in self.active_reports.items():
+        with self._lock:
+            items = list(self.active_reports.items())
+        for k, v in items:
             report_dict = asdict(v)
-            # Convert datetime objects to ISO strings
             if 'start_time' in report_dict and report_dict['start_time']:
                 report_dict['start_time'] = v.start_time.isoformat() if isinstance(v.start_time, datetime) else report_dict['start_time']
             if 'estimated_completion' in report_dict and report_dict['estimated_completion']:
@@ -579,10 +618,9 @@ def check_abort(report_id: str):
         if status_manager.abort_active:
             raise AbortSignal("System abort active")
 
-    if report_id in status_manager.active_reports:
-        report = status_manager.active_reports[report_id]
-        if getattr(report, 'abort_requested', False):
-            raise AbortSignal(f"Abort requested for {report_id}")
+    report = status_manager.get_report(report_id)
+    if report and getattr(report, 'abort_requested', False):
+        raise AbortSignal(f"Abort requested for {report_id}")
 
     if status_manager.abort_event.is_set():
         raise AbortSignal("Global abort event set")
@@ -622,10 +660,9 @@ def real_report_generator_worker():
             # Get next report from queue (blocking)
             report_id = status_manager.report_queue.get(timeout=1)
 
-            if report_id not in status_manager.active_reports:
+            report = status_manager.get_report(report_id)
+            if not report:
                 continue
-
-            report = status_manager.active_reports[report_id]
             ticker = report.ticker
 
             logger.info(f"Starting real report generation for {ticker} (ID: {report_id})")
@@ -786,10 +823,9 @@ def mock_report_generator_worker():
             # Get next report from queue (blocking)
             report_id = status_manager.report_queue.get(timeout=1)
 
-            if report_id not in status_manager.active_reports:
+            report = status_manager.get_report(report_id)
+            if not report:
                 continue
-
-            report = status_manager.active_reports[report_id]
             ticker = report.ticker
 
             logger.info(f"Starting mock report generation for {ticker} (ID: {report_id})")
