@@ -1,10 +1,8 @@
 #!/usr/bin/env python3
 # production_server.py - Full-featured production server for Render
 
-# CRITICAL: Eventlet monkey-patching MUST happen before any other imports
-# This prevents "maximum recursion depth exceeded" errors with requests library
-import eventlet
-eventlet.monkey_patch()
+# NOTE: Eventlet monkey-patching handled by gunicorn_config.py when using Gunicorn
+# For standalone execution, monkey-patch is done in __main__ block at bottom
 
 import os
 import sys
@@ -975,6 +973,10 @@ def _ensure_directories():
     static_dir.mkdir(parents=True, exist_ok=True)
 
 if __name__ == '__main__':
+    # Monkey-patch for standalone execution (not needed when using Gunicorn)
+    import eventlet
+    eventlet.monkey_patch()
+
     # Ensure directories exist
     _ensure_directories()
 
