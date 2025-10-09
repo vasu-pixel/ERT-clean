@@ -148,12 +148,16 @@ class DataOrchestrator:
             peer_candidates = [p.upper() for p in configured_peers if isinstance(p, str)]
 
         if not peer_candidates:
-            peer_candidates = self._fetch_peer_candidates(ticker, sector)
+            try:
+                peer_candidates = self._fetch_peer_candidates(ticker, sector)
+            except ValueError as e:
+                logger.warning(f"FMP peer lookup failed: {e}, using fallback peer list")
+                # Fallback to common peers by sector
+                peer_candidates = self._get_fallback_peers(ticker, sector)
 
         if not peer_candidates:
-            raise ValueError(
-                f"Live peer lookup returned no peers for {ticker}. Ensure your market data feed is available."
-            )
+            logger.warning(f"No peers found for {ticker}, using empty peer list")
+            return [], []
 
         peers: List[Dict[str, Optional[float]]] = []
         for peer in peer_candidates:
@@ -182,11 +186,32 @@ class DataOrchestrator:
                 break
 
         if not peers:
-            raise ValueError(
-                f"Unable to assemble peer metrics for {ticker}. Live fundamentals lookup failed."
-            )
+            logger.warning(f"Unable to assemble peer metrics for {ticker}, returning empty peer list")
+            return [], peer_candidates
 
         return peers, peer_candidates
+
+    def _get_fallback_peers(self, ticker: str, sector: str) -> List[str]:
+        """Fallback peer list when FMP API is unavailable"""
+        # Common peers by sector
+        fallback_map = {
+            "Technology": ["AAPL", "MSFT", "GOOGL", "META", "NVDA", "TSLA", "AMZN"],
+            "Healthcare": ["UNH", "JNJ", "PFE", "ABBV", "TMO", "CVS", "CI"],
+            "Consumer Cyclical": ["AMZN", "TSLA", "HD", "NKE", "MCD", "SBUX", "TGT"],
+            "Financial Services": ["JPM", "BAC", "WFC", "GS", "MS", "C", "BLK"],
+            "Communication Services": ["META", "GOOGL", "DIS", "NFLX", "T", "VZ"],
+            "Consumer Defensive": ["WMT", "PG", "KO", "PEP", "COST", "CL"],
+            "Industrials": ["BA", "CAT", "HON", "UNP", "GE", "LMT"],
+            "Energy": ["XOM", "CVX", "COP", "SLB", "EOG", "PSX"],
+            "Real Estate": ["AMT", "PLD", "CCI", "EQIX", "SPG", "O"],
+            "Basic Materials": ["LIN", "APD", "SHW", "NEM", "FCX", "DOW"],
+            "Utilities": ["NEE", "DUK", "SO", "D", "AEP", "EXC"]
+        }
+
+        # Get peers for sector, excluding the ticker itself
+        peers = fallback_map.get(sector, ["SPY"])  # Default to SPY if sector unknown
+        logger.info(f"Using fallback peers for {ticker} in {sector}: {peers[:5]}")
+        return [p for p in peers if p.upper() != ticker.upper()][:5]
 
     def _fetch_peer_candidates(self, ticker: str, sector: str) -> List[str]:
         api_key = os.getenv("FMP_API_KEY")
