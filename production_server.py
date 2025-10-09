@@ -47,18 +47,25 @@ def get_stock_info_from_fmp(ticker):
     """Fallback to FMP API when yfinance is rate limited"""
     fmp_api_key = os.getenv('FMP_API_KEY')
     if not fmp_api_key:
+        logger.warning("FMP_API_KEY not set in environment")
         return None
 
     try:
         import requests
         # Get quote
         quote_url = f"https://financialmodelingprep.com/api/v3/quote/{ticker}?apikey={fmp_api_key}"
+        logger.info(f"FMP API request: {quote_url[:80]}...")  # Log URL (truncate API key)
         response = requests.get(quote_url, timeout=5)
+
+        logger.info(f"FMP API response status: {response.status_code}")
 
         if response.status_code == 200:
             data = response.json()
+            logger.info(f"FMP API response data: {data}")
+
             if data and len(data) > 0:
                 quote = data[0]
+                logger.info(f"FMP API success for {ticker}: price={quote.get('price')}")
                 return {
                     'ticker': ticker,
                     'name': quote.get('name', ticker),
@@ -68,8 +75,15 @@ def get_stock_info_from_fmp(ticker):
                     'market_cap': quote.get('marketCap'),
                     'sector': quote.get('sector'),
                 }
+            else:
+                logger.warning(f"FMP API returned empty data for {ticker}")
+        else:
+            logger.warning(f"FMP API returned status {response.status_code}: {response.text[:200]}")
+
     except Exception as e:
         logger.error(f"FMP API error for {ticker}: {e}")
+        import traceback
+        logger.error(traceback.format_exc())
 
     return None
 
@@ -583,16 +597,25 @@ def api_generate():
     if not ticker:
         return jsonify({'error': 'Ticker symbol required'}), 400
 
+    # Basic ticker format validation (1-5 uppercase letters)
+    if not ticker.isalpha() or len(ticker) > 5:
+        return jsonify({'error': f'Invalid ticker format: {ticker}'}), 400
+
+    # Try to validate ticker, but proceed anyway if validation fails (rate limits)
     info = get_stock_info(ticker)
     if not info:
-        return jsonify({'error': f'Invalid ticker: {ticker}'}), 400
+        logger.warning(f"⚠️  Ticker validation failed for {ticker} (likely rate limited) - proceeding anyway")
+        # Fallback: Skip validation and let report generation handle data fetching
+        # The background worker will validate during comprehensive data fetch
 
     try:
         report_id = status_manager.add_report_to_queue(ticker)
         return jsonify({
             'success': True,
             'report_id': report_id,
-            'message': f'Report for {ticker} added to queue'
+            'message': f'Report for {ticker} added to queue',
+            'validated': info is not None,
+            'note': 'Validation skipped due to rate limits' if not info else None
         })
     except ValueError as exc:
         return jsonify({'error': str(exc)}), 400
