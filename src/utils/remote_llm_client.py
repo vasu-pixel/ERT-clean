@@ -18,7 +18,7 @@ class RemoteLLMConfig:
     """Configuration for remote LLM backend"""
     base_url: str
     api_key: str
-    timeout: int = 120
+    timeout: int = 3600  # 1 hour timeout for long-running LLM generation
     max_retries: int = 3
     retry_delay: int = 2
 
@@ -144,7 +144,7 @@ class RemoteEquityResearchGenerator:
         # Load configuration from environment
         self.base_url = os.getenv("ERT_LLM_BACKEND_URL", "http://localhost:8000")
         self.api_key = os.getenv("ERT_LLM_API_KEY", "ert-vast-api-key-2024")
-        self.timeout = int(os.getenv("ERT_LLM_TIMEOUT", "120"))
+        self.timeout = int(os.getenv("ERT_LLM_TIMEOUT", "3600"))  # 1 hour default
 
         self.config = RemoteLLMConfig(
             base_url=self.base_url,

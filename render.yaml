@@ -28,7 +28,7 @@ services:
       - key: OLLAMA_MODEL
         value: gpt-oss:20b
       - key: ERT_LLM_TIMEOUT
-        value: 120
+        value: 3600
       - key: CACHE_TTL_SECONDS
         value: 300
       - key: MAX_TICKER_LENGTH
@@ -47,6 +47,8 @@ services:
         value: Q4JQUU2KXA60C7CF
       - key: POLYGON_API_KEY
         value: hbHwrUsCwbKfBSMyZiFZnpyMTda0wDgC
+      - key: USE_POLYGON_PRIMARY
+        value: true
       - key: FINNHUB_API_KEY
         value: d3fbrhhr01qolknci54gd3fbrhhr01qolknci550
       - key: NEWSAPI_KEY

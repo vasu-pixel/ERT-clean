@@ -167,16 +167,26 @@ class EquityReportGenerator:
         """Generate executive summary section"""
         system_prompt = """You are a senior equity research analyst. Generate a professional executive summary for an equity research report. Focus on key investment highlights, financial performance, and strategic positioning."""
 
+        # Format financial metrics safely
+        market_cap = financial_data.get('marketCap')
+        market_cap_str = f"${market_cap:,}" if isinstance(market_cap, (int, float)) else 'N/A'
+
+        total_revenue = financial_data.get('totalRevenue')
+        revenue_str = f"${total_revenue:,}" if isinstance(total_revenue, (int, float)) else 'N/A'
+
+        profit_margin = financial_data.get('profitMargins')
+        margin_str = f"{profit_margin:.2%}" if isinstance(profit_margin, (int, float)) else 'N/A'
+
         prompt = f"""
 Company: {company_data.get('longName', ticker)}
 Sector: {company_data.get('sector', 'N/A')}
 Industry: {company_data.get('industry', 'N/A')}
 
 Key Financial Metrics:
-- Market Cap: ${financial_data.get('marketCap', 'N/A'):,} if isinstance(financial_data.get('marketCap'), (int, float)) else 'N/A'
-- Revenue (TTM): ${financial_data.get('totalRevenue', 'N/A'):,} if isinstance(financial_data.get('totalRevenue'), (int, float)) else 'N/A'
+- Market Cap: {market_cap_str}
+- Revenue (TTM): {revenue_str}
 - P/E Ratio: {financial_data.get('trailingPE', 'N/A')}
-- Profit Margin: {financial_data.get('profitMargins', 'N/A'):.2%} if isinstance(financial_data.get('profitMargins'), (int, float)) else 'N/A'
+- Profit Margin: {margin_str}
 
 Generate a concise 3-4 paragraph executive summary covering:
 1. Company overview and market position

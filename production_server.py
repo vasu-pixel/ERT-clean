@@ -771,19 +771,40 @@ def real_report_generator_worker():
                 )
 
                 # Extract and structure data for the LLM
+                # Flatten fundamentals for backend compatibility
+                fundamentals = company_dataset.financials.fundamentals or {}
+
                 company_data = {
                     'ticker': ticker,
-                    'name': company_dataset.snapshot.name,
+                    'longName': company_dataset.snapshot.name,
                     'sector': company_dataset.snapshot.sector,
                     'industry': company_dataset.snapshot.industry,
-                    'market_cap': company_dataset.snapshot.market_cap,
-                    'current_price': company_dataset.snapshot.current_price,
+                    'longBusinessSummary': fundamentals.get('longBusinessSummary', ''),
                 }
 
+                # Flatten financial data - backend expects fields at top level
                 financial_data = {
-                    'fundamentals': company_dataset.financials.fundamentals,
-                    'ratios': company_dataset.financials.ratios,
-                    'price_history': company_dataset.financials.price_history,
+                    'currentPrice': company_dataset.snapshot.current_price,
+                    'marketCap': company_dataset.snapshot.market_cap,
+                    'totalRevenue': fundamentals.get('totalRevenue'),
+                    'grossProfits': fundamentals.get('grossProfits'),
+                    'operatingIncome': fundamentals.get('operatingIncome'),
+                    'netIncomeToCommon': fundamentals.get('netIncome'),
+                    'profitMargins': fundamentals.get('profitMargins'),
+                    'trailingPE': fundamentals.get('trailingPE'),
+                    'forwardPE': fundamentals.get('forwardPE'),
+                    'priceToBook': fundamentals.get('priceToBook'),
+                    'enterpriseValue': fundamentals.get('enterpriseValue'),
+                    'enterpriseToRevenue': fundamentals.get('enterpriseToRevenue'),
+                    'enterpriseToEbitda': fundamentals.get('enterpriseToEbitda'),
+                    'returnOnEquity': fundamentals.get('returnOnEquity'),
+                    'returnOnAssets': fundamentals.get('returnOnAssets'),
+                    'debtToEquity': fundamentals.get('debtToEquity'),
+                    'currentRatio': fundamentals.get('currentRatio'),
+                    'quickRatio': fundamentals.get('quickRatio'),
+                    'beta': fundamentals.get('beta'),
+                    'bookValue': fundamentals.get('bookValue'),
+                    'priceToSalesTrailing12Months': fundamentals.get('priceToSalesTrailing12Months'),
                 }
 
                 market_data = {
