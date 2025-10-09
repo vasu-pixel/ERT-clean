@@ -4,7 +4,7 @@ services:
     env: python
     plan: starter
     buildCommand: pip install --upgrade pip && pip install --no-cache-dir -r requirements.txt
-    startCommand: gunicorn --config gunicorn_config.py wsgi:app
+    startCommand: python3 run_waitress.py
     healthCheckPath: /health
     envVars:
       - key: PYTHON_VERSION
