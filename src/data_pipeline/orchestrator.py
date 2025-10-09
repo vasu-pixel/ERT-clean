@@ -52,8 +52,20 @@ class DataOrchestrator:
             raise ValueError(f"Unable to fetch fundamentals for {ticker}")
 
         fundamentals: Dict[str, Optional[float]] = dict(fundamentals_raw)
-        price_history = fundamentals.pop("price_history", None)
+        price_history_raw = fundamentals.pop("price_history", None)
         statements = fundamentals.pop("statements", {})
+
+        # Convert DataFrame to dict for JSON serialization
+        price_history = None
+        if price_history_raw is not None:
+            try:
+                if hasattr(price_history_raw, 'to_dict'):
+                    price_history = price_history_raw.to_dict('list')
+                else:
+                    price_history = price_history_raw
+            except Exception as e:
+                logger.warning(f"Could not serialize price_history for {ticker}: {e}")
+                price_history = None
 
         snapshot = CompanySnapshot(
             ticker=ticker,
