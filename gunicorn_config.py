@@ -7,6 +7,10 @@ import os
 import multiprocessing
 import logging
 
+# CRITICAL: Import eventlet and monkey-patch BEFORE any other imports
+import eventlet
+eventlet.monkey_patch()
+
 # Logging
 loglevel = 'info'
 accesslog = '-'  # Log to stdout

@@ -174,26 +174,13 @@ def get_stock_info(ticker):
             logger.info(f"Returning stale cache for {ticker} to avoid rate limits (age: {int((time.time() - timestamp)/3600)}h)")
             return cached_data
 
-    # Try FMP API first (more reliable, no rate limits with API key)
-    logger.info(f"Fetching stock info for {ticker} from FMP API")
-    result = get_stock_info_from_fmp(ticker)
-    if result:
-        stock_info_cache[cache_key] = (result, time.time())
-        return result
-
-    # Secondary fallback: Alpha Vantage
-    logger.info(f"FMP failed, trying Alpha Vantage for {ticker}")
-    av_result = get_stock_info_from_alpha_vantage(ticker)
-    if av_result:
-        stock_info_cache[cache_key] = (av_result, time.time())
-        return av_result
-
-    # Fallback to yfinance if FMP fails
+    # Try yfinance first (free, no API key needed)
     if not YFINANCE_AVAILABLE:
+        logger.warning("yfinance not available")
         return None
 
     try:
-        logger.info(f"FMP failed, trying yfinance for {ticker}")
+        logger.info(f"Fetching stock info for {ticker} from yfinance")
         start_time = time.time()
         stock = yf.Ticker(ticker)
         info = stock.info
@@ -224,7 +211,7 @@ def get_stock_info(ticker):
 
     except Exception as e:
         error_msg = str(e)
-        logger.error(f"FMP, Alpha Vantage, and yfinance failed for {ticker}: {error_msg}")
+        logger.error(f"yfinance failed for {ticker}: {error_msg}")
 
         # If rate limited, always try to serve stale cache if available
         if "rate limit" in error_msg.lower() or "too many requests" in error_msg.lower():
